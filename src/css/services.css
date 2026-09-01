@@ -1,0 +1,54 @@
+/* ---- page header ---- */
+.page-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; flex-shrink:0; position:relative; }
+.icon-btn { width:38px; height:38px; border-radius:50%; background:var(--card); border:1px solid var(--border); display:grid; place-items:center; color:var(--ink-2); transition:all .18s ease; flex-shrink:0; }
+.icon-btn:hover { border-color:var(--border-2); color:var(--brand); }
+.page-title { position:absolute; inset-inline:0; text-align:center; font-size:1.05rem; font-weight:700; pointer-events:none; }
+.head-actions { display:flex; align-items:center; gap:9px; }
+.bell-btn { position:relative; width:38px; height:38px; border-radius:50%; background:var(--card); border:1px solid var(--border); display:grid; place-items:center; color:var(--ink-2); transition:all .18s ease; }
+.bell-btn:hover { border-color:var(--border-2); color:var(--brand); }
+.bell-dot { position:absolute; top:8px; inset-inline-end:9px; width:7px; height:7px; border-radius:50%; background:var(--gold); border:2px solid var(--cream); }
+
+.scroll-area { flex:1; overflow-y:auto; padding:14px 20px 100px; }
+
+/* ---- filter pills ---- */
+.pill-scroll { display:flex; gap:8px; overflow-x:auto; margin:0 -20px 22px; padding-inline:20px; scroll-snap-type:x proximity; }
+.pill { flex:0 0 auto; scroll-snap-align:start; padding:9px 18px; border-radius:20px; font-size:.86rem; font-weight:600; background:var(--card); border:1px solid var(--border); color:var(--ink-2); white-space:nowrap; transition:all .18s ease; }
+.pill:hover { border-color:var(--border-2); }
+.pill.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+
+/* ---- recommended ---- */
+.reco-eyebrow { display:flex; align-items:center; gap:6px; font-size:.72rem; font-weight:700; color:var(--gold); letter-spacing:.04em; margin-bottom:12px; }
+.reco-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:26px; }
+.reco-card { border-radius:var(--r-lg); overflow:hidden; background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow-sm); transition:transform .15s ease; }
+.reco-card:active { transform:scale(.98); }
+.reco-img { height:92px; display:grid; place-items:center; color:rgba(255,255,255,.9); }
+.reco-body { padding:10px 12px 13px; }
+.reco-t { font-weight:700; font-size:.86rem; line-height:1.35; }
+.reco-p { font-size:.78rem; color:var(--gold); font-weight:700; margin-top:5px; }
+
+/* ---- availability label ---- */
+.avail-label { font-size:.72rem; font-weight:700; color:var(--ink-3); letter-spacing:.04em; margin-bottom:12px; }
+
+/* ---- service list ---- */
+.svc-list { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.svc-item { display:flex; align-items:center; gap:13px; background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:13px; box-shadow:var(--shadow-sm); transition:transform .15s ease; text-align:right; width:100%; }
+.svc-item:active { transform:scale(.98); }
+.svc-thumb { width:60px; height:60px; border-radius:var(--r-md); flex-shrink:0; display:grid; place-items:center; color:rgba(255,255,255,.92); }
+.svc-info { flex:1; min-width:0; }
+.svc-item-name { font-weight:700; font-size:.94rem; }
+.svc-item-desc { font-size:.78rem; color:var(--ink-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.svc-meta { display:flex; align-items:center; gap:9px; margin-top:7px; font-size:.78rem; flex-wrap:wrap; }
+.svc-dur { display:flex; align-items:center; gap:3px; color:var(--ink-3); }
+.svc-price { color:var(--gold); font-weight:700; }
+.svc-rate { display:flex; align-items:center; gap:3px; color:var(--ink-2); }
+.svc-rate svg { color:var(--gold); flex-shrink:0; }
+.svc-rc { color:var(--ink-3); }
+.svc-chev { color:var(--ink-3); flex-shrink:0; transform:rotate(180deg); }
+
+/* ---- consultation banner ---- */
+.consult-card { position:relative; overflow:hidden; background:linear-gradient(135deg,#241a20,#150e12); border-radius:var(--r-lg); padding:24px 22px; margin-bottom:8px; }
+.consult-card::before { content:''; position:absolute; inset-inline-start:-30%; top:-40%; width:70%; height:140%; background:radial-gradient(circle,rgba(193,122,78,.35),transparent 65%); pointer-events:none; }
+.consult-t { position:relative; font-weight:800; font-size:1.05rem; color:#fff; line-height:1.45; }
+.consult-s { position:relative; font-size:.84rem; color:rgba(255,255,255,.68); margin-top:7px; margin-bottom:18px; line-height:1.55; }
+.consult-btn { position:relative; width:100%; background:#fff; color:#1a1015; font-weight:700; font-size:.92rem; padding:14px; border-radius:26px; transition:filter .18s ease; }
+.consult-btn:hover { filter:brightness(.94); }
