@@ -63,7 +63,7 @@ img { max-width:100%; display:block; }
 .login-btn { display:inline-flex; align-items:center; gap:6px; background:var(--brand); color:#fff; font-weight:600; font-size:.84rem; padding:9px 16px; border-radius:20px; transition:filter .18s ease; white-space:nowrap; }
 .login-btn:hover { filter:brightness(1.08); }
 
-.scroll-area { flex:1; overflow-y:auto; padding:6px 20px 100px; }
+.scroll-area { flex:1; overflow-y:auto;}
 
 .hero { padding:14px 0 18px; }
 .hero-title { font-size:1.55rem; font-weight:800; letter-spacing:-.01em; line-height:1.35; }

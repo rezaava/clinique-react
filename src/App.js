@@ -6,6 +6,7 @@ import Home from './pages/Home/HomeComponent';
 import Footer from './pages/FooterComponent';
 import Services from './pages/Services/ServicesComponent';
 import ServiceDetail from './pages/ServiceDetail/ServicesComponent';
+import SpecialistProfile from './pages/SpecialistProfile/SpecialistProfileComponent';
 
 
 function App() {
@@ -15,11 +16,12 @@ function App() {
     <BrowserRouter>
 
       <Routes>
-
         <Route path="/" element={<Home />} />
 
         <Route path="/services" element={<Services />} />
         <Route path="/service-detail/:id" element={<ServiceDetail />}/>
+
+        <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
       </Routes>
 
       <Footer/>
