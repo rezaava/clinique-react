@@ -11,7 +11,7 @@
 .scroll-area { flex:1; overflow-y:auto;}
 
 /* ---- filter pills ---- */
-.pill-scroll { display:flex; gap:8px; overflow-x:auto; margin:0 -20px 22px; padding-inline:20px; scroll-snap-type:x proximity; }
+.pill-scroll { display:flex; gap:8px; overflow-x:auto; margin:10px 0px 22px; padding-inline:20px; scroll-snap-type:x proximity; }
 .pill { flex:0 0 auto; scroll-snap-align:start; padding:9px 18px; border-radius:20px; font-size:.86rem; font-weight:600; background:var(--card); border:1px solid var(--border); color:var(--ink-2); white-space:nowrap; transition:all .18s ease; }
 .pill:hover { border-color:var(--border-2); }
 .pill.active { background:var(--brand); color:#fff; border-color:var(--brand); }

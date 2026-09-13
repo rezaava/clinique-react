@@ -9,6 +9,7 @@ import ServiceDetail from './pages/ServiceDetail/ServicesComponent';
 import SpecialistProfile from './pages/SpecialistProfile/SpecialistProfileComponent';
 import Profile from './pages/Profile/ProfileComponent';
 import Journey from './pages/Journey/JourneyComponent';
+import AppointmentsDet from './pages/Appointments/AppointmentsDetailComponent';
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
 
         <Route path="/profile" element={<Profile />}/>
         <Route path="/journey" element={<Journey />}/>
+        <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
       </Routes>
 
       <Footer/>
