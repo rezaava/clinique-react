@@ -10,6 +10,7 @@ import SpecialistProfile from './pages/SpecialistProfile/SpecialistProfileCompon
 import Profile from './pages/Profile/ProfileComponent';
 import Journey from './pages/Journey/JourneyComponent';
 import AppointmentsDet from './pages/Appointments/AppointmentsDetailComponent';
+import Appointments from './pages/Appointments/AppointmentsComponent';
 
 
 function App() {
@@ -28,6 +29,9 @@ function App() {
 
         <Route path="/profile" element={<Profile />}/>
         <Route path="/journey" element={<Journey />}/>
+
+        <Route path="/appointments" element={<Appointments />}/>
+
         <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
       </Routes>
 
