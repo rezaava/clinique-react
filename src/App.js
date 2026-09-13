@@ -8,6 +8,7 @@ import Services from './pages/Services/ServicesComponent';
 import ServiceDetail from './pages/ServiceDetail/ServicesComponent';
 import SpecialistProfile from './pages/SpecialistProfile/SpecialistProfileComponent';
 import Profile from './pages/Profile/ProfileComponent';
+import Journey from './pages/Journey/JourneyComponent';
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
 
         <Route path="/profile" element={<Profile />}/>
+        <Route path="/journey" element={<Journey />}/>
       </Routes>
 
       <Footer/>
