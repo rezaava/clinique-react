@@ -7,6 +7,7 @@ import Footer from './pages/FooterComponent';
 import Services from './pages/Services/ServicesComponent';
 import ServiceDetail from './pages/ServiceDetail/ServicesComponent';
 import SpecialistProfile from './pages/SpecialistProfile/SpecialistProfileComponent';
+import Profile from './pages/Profile/ProfileComponent';
 
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
         <Route path="/service-detail/:id" element={<ServiceDetail />}/>
 
         <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
+
+        <Route path="/profile" element={<Profile />}/>
       </Routes>
 
       <Footer/>
