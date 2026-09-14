@@ -6,101 +6,49 @@ import ReviewItem from "./ReviewItemComponent";
 import CredentialItem from "./CredentialItemComponent";
 
 class SpecialistProfile extends React.Component {
-    tags = [
-    {
-      id: 1,
-      name: "هارمونی صورت"
-    },
-    {
-      id: 2,
-      name: "سلامت پوست"
-    },
-    {
-      id: 3,
-      name: "غیرجراحی"
-    },
-    {
-      id: 4,
-      name: "ضدپیری"
-    },
-    {
-      id: 5,
-      name: "کم‌تهاجمی"
-    }
-  ];
-  specialties = [
-    {
-      id: 1,
-      name: "بوتاکس"
-    },
-    {
-      id: 2,
-      name: "فیلر"
-    },
-    {
-      id: 3,
-      name: "لیزر"
-    },
-    {
-      id: 4,
-      name: "جوان‌سازی پوست"
-    },
-    {
-      id: 5,
-      name: "مزوتراپی"
-    }
-  ];
+  state = {
+    doctor: null,
+    loading: true,
+    error: false
+  };
 
-  reviews = [
-    {
-      id: 1,
-      avatar: "س‌م",
-      name: "س. محمدی",
-      stars: "★★★★★",
-      tag: "بوتاکس",
-      date: "۲ هفته پیش",
-      text: "دکتر مرادی فوق‌العاده حرفه‌ای بود. نتیجه کاملاً طبیعی به نظر می‌رسید و در تمام مدت احساس آرامش کامل داشتم."
-    },
-    {
-      id: 2,
-      avatar: "ا‌ر",
-      name: "ا. رضوی",
-      stars: "★★★★★",
-      tag: "فیلر",
-      date: "۱ ماه پیش",
-      text: "تخصص فوق‌العاده‌ای داشت. به دغدغه‌های من گوش داد و دقیقاً همون چیزی که می‌خواستم رو ارائه داد — نه بیشتر، نه کمتر."
-    },
-    {
-      id: 3,
-      avatar: "ل‌ک",
-      name: "ل. کریمی",
-      stars: "★★★★☆",
-      tag: "جوان‌سازی پوست",
-      date: "۶ هفته پیش",
-      text: "مشاوره خیلی کامل بود. از این‌که هر مرحله رو قبل و حین درمان توضیح می‌داد قدردانی می‌کنم."
-    }
-  ];
+  componentDidMount() {
+    this.getDoctor();
+  }
 
-  credentials = [
-    {
-      id: 1,
-      title: "دارای بورد تخصصی",
-      text: "پزشکی زیبایی و آرایشی",
-      type: "board"
-    },
-    {
-      id: 2,
-      title: "فلوشیپ بین‌المللی",
-      text: "زیبایی پیشرفته صورت، لندن",
-      type: "fellowship"
-    },
-    {
-      id: 3,
-      title: "عضو",
-      text: "انجمن اروپایی پزشکی زیبایی",
-      type: "member"
+  getDoctor = async () => {
+    const id =
+      this.props.match?.params?.id ||
+      new URLSearchParams(window.location.search).get("id") ||
+      window.location.pathname.split("/").pop();
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/specialist-profile/${id}`
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        this.setState({
+          doctor: result.data.doctor,
+          loading: false
+        });
+      } else {
+        this.setState({
+          loading: false,
+          error: true
+        });
+      }
+    } catch (error) {
+      console.error("SPECIALIST PROFILE ERROR:", error);
+
+      this.setState({
+        loading: false,
+        error: true
+      });
     }
-  ];
+  };
 
   getCredentialIcon = (type) => {
     if (type === "board") {
@@ -157,7 +105,105 @@ class SpecialistProfile extends React.Component {
     );
   };
 
+  getDoctorName = () => {
+    const { doctor } = this.state;
+
+    if (!doctor) {
+      return "متخصص";
+    }
+
+    return `دکتر ${doctor.first_name || ""} ${doctor.last_name || ""}`.trim();
+  };
+
+  getInitials = (user) => {
+    if (!user) {
+      return "م";
+    }
+
+    const first = user.first_name?.charAt(0) || "";
+    const last = user.last_name?.charAt(0) || "";
+
+    return `${first}${last}` || "م";
+  };
+
+  formatDate = (date) => {
+    if (!date) {
+      return "";
+    }
+
+    try {
+      return new Intl.DateTimeFormat("fa-IR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }).format(new Date(date));
+    } catch {
+      return "";
+    }
+  };
+
+  renderStars = (rating) => {
+    const value = Number(rating) || 0;
+
+    return (
+      <span className="spec-stars-ic">
+        {[1, 2, 3, 4, 5].map((item) => (
+          <svg
+            key={item}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill={item <= Math.round(value) ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
+          </svg>
+        ))}
+      </span>
+    );
+  };
+
   render() {
+    const {
+      doctor,
+      loading,
+      error
+    } = this.state;
+
+    if (loading) {
+      return (
+        <div className="scroll-area">
+          <div
+            style={{
+              padding: "50px",
+              textAlign: "center"
+            }}
+          >
+            در حال دریافت اطلاعات...
+          </div>
+        </div>
+      );
+    }
+
+    if (error || !doctor) {
+      return (
+        <div className="scroll-area">
+          <div
+            style={{
+              padding: "50px",
+              textAlign: "center"
+            }}
+          >
+            دریافت اطلاعات متخصص با خطا مواجه شد.
+          </div>
+        </div>
+      );
+    }
+
+    const services = doctor.services || [];
+    const reviews = doctor.reviews || [];
+
     return (
       <>
         <header className="page-header" id="pageHeader">
@@ -230,34 +276,48 @@ class SpecialistProfile extends React.Component {
             <div className="spec-hero-bg"></div>
 
             <div className="spec-hero-silhouette">
-              <svg
-                width="180"
-                height="260"
-                viewBox="0 0 180 260"
-                fill="none"
-                opacity=".55"
-              >
-                <ellipse
-                  cx="90"
-                  cy="90"
-                  rx="52"
-                  ry="62"
-                  fill="#fff"
-                  fillOpacity=".18"
+              {doctor.avatar ? (
+                <img
+                  src={doctor.avatar}
+                  alt={this.getDoctorName()}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover"
+                  }}
                 />
-                <path
-                  d="M40 260c0-45 22-80 50-80s50 35 50 80"
-                  fill="#fff"
-                  fillOpacity=".18"
-                />
-              </svg>
+              ) : (
+                <svg
+                  width="180"
+                  height="260"
+                  viewBox="0 0 180 260"
+                  fill="none"
+                  opacity=".55"
+                >
+                  <ellipse
+                    cx="90"
+                    cy="90"
+                    rx="52"
+                    ry="62"
+                    fill="#fff"
+                    fillOpacity=".18"
+                  />
+                  <path
+                    d="M40 260c0-45 22-80 50-80s50 35 50 80"
+                    fill="#fff"
+                    fillOpacity=".18"
+                  />
+                </svg>
+              )}
             </div>
 
             <div className="spec-hero-fade"></div>
 
             <div className="spec-hero-content">
               <div className="spec-name-row">
-                <h2 className="spec-name">دکتر آریانا مرادی</h2>
+                <h2 className="spec-name">
+                  {this.getDoctorName()}
+                </h2>
 
                 <span className="verified-badge">
                   <svg
@@ -280,59 +340,19 @@ class SpecialistProfile extends React.Component {
               </div>
 
               <div className="spec-role">
-                پزشک زیبایی · متخصص پوست
+                {doctor.ability.name}
               </div>
 
               <div className="spec-rate-row">
-                <span className="spec-stars-ic">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                  </svg>
+                {this.renderStars(doctor.rating)}
 
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                  </svg>
-
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                  </svg>
-
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                  </svg>
-
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                  </svg>
+                <span className="spec-rn">
+                  {doctor.rating || 0}
                 </span>
 
-                <span className="spec-rn">۴.۹</span>
-                <span>· ۳۱۸ نظر</span>
+                <span>
+                  · {doctor.rating_count || 0} نظر
+                </span>
 
                 <span className="spec-sep">|</span>
 
@@ -351,7 +371,7 @@ class SpecialistProfile extends React.Component {
                     <path d="M12 6v6l4 2" />
                   </svg>
 
-                  ۸ سال سابقه
+                  {doctor.experience} سال سابقه
                 </span>
               </div>
             </div>
@@ -368,15 +388,13 @@ class SpecialistProfile extends React.Component {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
                     <circle cx="12" cy="8" r="6" />
                     <path d="M9.5 13.5 7 21l5-3 5 3-2.5-7.5" />
                   </svg>
                 </div>
 
-                <div className="stats-num">۸ سال</div>
+                <div className="stats-num">{doctor.experience} سال</div>
                 <div className="stats-lbl">سابقه</div>
               </div>
 
@@ -389,8 +407,6 @@ class SpecialistProfile extends React.Component {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
@@ -398,7 +414,10 @@ class SpecialistProfile extends React.Component {
                   </svg>
                 </div>
 
-                <div className="stats-num">۲٬۴۰۰+</div>
+                <div className="stats-num">
+                  {doctor.client_count || 0}
+                </div>
+
                 <div className="stats-lbl">مراجع</div>
               </div>
 
@@ -411,14 +430,15 @@ class SpecialistProfile extends React.Component {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
                   </svg>
                 </div>
 
-                <div className="stats-num">۴.۹</div>
+                <div className="stats-num">
+                  {doctor.rating || 0}
+                </div>
+
                 <div className="stats-lbl">امتیاز</div>
               </div>
 
@@ -431,14 +451,15 @@ class SpecialistProfile extends React.Component {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
 
-                <div className="stats-num">۳۱۸</div>
+                <div className="stats-num">
+                  {doctor.rating_count || 0}
+                </div>
+
                 <div className="stats-lbl">نظر</div>
               </div>
             </div>
@@ -446,14 +467,12 @@ class SpecialistProfile extends React.Component {
             <h3 className="detail-h2">درباره</h3>
 
             <p className="detail-desc">
-              دکتر آریانا مرادی پزشک زیبایی دارای بورد تخصصی با بیش از ۸ سال
-              سابقه در پزشکی زیبایی غیرجراحی است. ایشان در کلینیک‌های معتبر
-              اروپایی آموزش دیده و دارای گواهینامه‌های پیشرفته در زیبایی صورت
-              و پوست است.
+              {doctor.about}
             </p>
 
             <a href="#" className="read-more">
               بیشتر بخوانید
+
               <svg
                 width="13"
                 height="13"
@@ -468,8 +487,9 @@ class SpecialistProfile extends React.Component {
               </svg>
             </a>
 
+            {/* Tags = Services */}
             <div className="tag-pills">
-              {this.tags.map((item) => (
+              {services.map((item) => (
                 <span
                   className="tag-pill"
                   key={item.id}
@@ -486,6 +506,7 @@ class SpecialistProfile extends React.Component {
 
               <a href="#" className="view-all-link">
                 مشاهده همه
+
                 <svg
                   width="14"
                   height="14"
@@ -501,8 +522,9 @@ class SpecialistProfile extends React.Component {
               </a>
             </div>
 
+            {/* Services */}
             <div className="spty-scroll">
-              {this.specialties.map((item) => (
+              {services.map((item) => (
                 <SpecialtyItem
                   key={item.id}
                   name={item.name}
@@ -525,26 +547,34 @@ class SpecialistProfile extends React.Component {
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
                 </svg>
 
-                ۴.۹ <span>(۳۱۸)</span>
+                {doctor.rating || 0}
+
+                <span>
+                  ({doctor.rating_count || 0})
+                </span>
               </div>
             </div>
 
             <div className="rev-list">
-              {this.reviews.map((item) => (
+              {reviews.map((item) => (
                 <ReviewItem
                   key={item.id}
-                  avatar={item.avatar}
-                  name={item.name}
-                  stars={item.stars}
-                  tag={item.tag}
-                  date={item.date}
-                  text={item.text}
+                  avatar={this.getInitials(item.user)}
+                  name={
+                    item.user
+                      ? `${item.user.first_name || ""} ${item.user.last_name || ""}`.trim()
+                      : "مراجع"
+                  }
+                  stars={"★".repeat(item.staff_rating || 0)}
+                  tag={item.service?.name || "خدمت"}
+                  date={this.formatDate(item.reviewed_at)}
+                  text={item.review}
                 />
               ))}
             </div>
 
             <button className="see-all-btn">
-              مشاهده همه ۳۱۸ نظر
+              مشاهده همه {doctor.rating_count || 0} نظر
             </button>
 
             <div className="sec-head-row">
@@ -554,6 +584,7 @@ class SpecialistProfile extends React.Component {
 
               <a href="#" className="view-all-link">
                 برنامه کامل
+
                 <svg
                   width="14"
                   height="14"
@@ -569,20 +600,21 @@ class SpecialistProfile extends React.Component {
               </a>
             </div>
 
+            {/* فعلاً هاردکد چون API زمان‌های خالی را نمی‌فرستد */}
             <div className="date-scroll" id="dateScroll">
-              <button className="date-card active" data-d="0">
+              <button className="date-card active">
                 <div className="date-day">امروز</div>
                 <div className="date-date">۱۱ شهریور</div>
                 <div className="date-slots">۲ نوبت خالی</div>
               </button>
 
-              <button className="date-card" data-d="1">
+              <button className="date-card">
                 <div className="date-day">فردا</div>
                 <div className="date-date">۱۲ شهریور</div>
                 <div className="date-slots">۳ نوبت خالی</div>
               </button>
 
-              <button className="date-card" data-d="2">
+              <button className="date-card">
                 <div className="date-day">چهارشنبه</div>
                 <div className="date-date">۱۳ شهریور</div>
                 <div className="date-slots">۳ نوبت خالی</div>
@@ -607,8 +639,6 @@ class SpecialistProfile extends React.Component {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
@@ -620,7 +650,7 @@ class SpecialistProfile extends React.Component {
                   </div>
 
                   <p className="consult-s2">
-                    برای بررسی گزینه‌هاتون یک مشاوره خصوصی با دکتر مرادی
+                    برای بررسی گزینه‌هاتون یک مشاوره خصوصی با دکتر
                     درخواست بدید — بدون هیچ تعهدی.
                   </p>
                 </div>
@@ -632,7 +662,7 @@ class SpecialistProfile extends React.Component {
             </div>
 
             <div className="cred-card cred-card-no-margin">
-              {this.credentials.map((item) => (
+              {doctor.credentials.map((item) => (
                 <CredentialItem
                   key={item.id}
                   title={item.title}

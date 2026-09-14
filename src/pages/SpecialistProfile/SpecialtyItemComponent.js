@@ -21,7 +21,9 @@ class SpecialtyItem extends React.Component {
           </svg>
         </span>
 
-        <div className="spty-name">{name}</div>
+        <div className="spty-name">
+          {name}
+        </div>
       </div>
     );
   }
