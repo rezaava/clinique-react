@@ -1,9 +1,9 @@
 import React from "react";
 import "./../../css/SpecialistProfile.css";
-
 import SpecialtyItem from "./SpecialtyItemComponent";
 import ReviewItem from "./ReviewItemComponent";
 import CredentialItem from "./CredentialItemComponent";
+import withRouter from "../withRouter";
 
 class SpecialistProfile extends React.Component {
   state = {
@@ -13,14 +13,26 @@ class SpecialistProfile extends React.Component {
   };
 
   componentDidMount() {
+    const { id } = this.props.params;
+
+    console.log("ROUTE ID:", id);
+
     this.getDoctor();
   }
 
   getDoctor = async () => {
-    const id =
-      this.props.match?.params?.id ||
-      new URLSearchParams(window.location.search).get("id") ||
-      window.location.pathname.split("/").pop();
+    const { id } = this.props.params;
+
+    if (!id) {
+      console.error("SPECIALIST PROFILE: ID NOT FOUND");
+
+      this.setState({
+        loading: false,
+        error: true
+      });
+
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -112,7 +124,9 @@ class SpecialistProfile extends React.Component {
       return "متخصص";
     }
 
-    return `دکتر ${doctor.first_name || ""} ${doctor.last_name || ""}`.trim();
+    return `دکتر ${doctor.first_name || ""} ${
+      doctor.last_name || ""
+    }`.trim();
   };
 
   getInitials = (user) => {
@@ -203,6 +217,7 @@ class SpecialistProfile extends React.Component {
 
     const services = doctor.services || [];
     const reviews = doctor.reviews || [];
+    const credentials = doctor.credentials || [];
 
     return (
       <>
@@ -302,6 +317,7 @@ class SpecialistProfile extends React.Component {
                     fill="#fff"
                     fillOpacity=".18"
                   />
+
                   <path
                     d="M40 260c0-45 22-80 50-80s50 35 50 80"
                     fill="#fff"
@@ -327,6 +343,7 @@ class SpecialistProfile extends React.Component {
                     fill="currentColor"
                   >
                     <circle cx="12" cy="12" r="10" />
+
                     <path
                       d="m8 12.5 2.5 2.5L16 9"
                       stroke="#fff"
@@ -340,7 +357,7 @@ class SpecialistProfile extends React.Component {
               </div>
 
               <div className="spec-role">
-                {doctor.ability.name}
+                {doctor.ability?.name || ""}
               </div>
 
               <div className="spec-rate-row">
@@ -371,7 +388,7 @@ class SpecialistProfile extends React.Component {
                     <path d="M12 6v6l4 2" />
                   </svg>
 
-                  {doctor.experience} سال سابقه
+                  {doctor.experience || 0} سال سابقه
                 </span>
               </div>
             </div>
@@ -394,7 +411,10 @@ class SpecialistProfile extends React.Component {
                   </svg>
                 </div>
 
-                <div className="stats-num">{doctor.experience} سال</div>
+                <div className="stats-num">
+                  {doctor.experience || 0} سال
+                </div>
+
                 <div className="stats-lbl">سابقه</div>
               </div>
 
@@ -487,7 +507,6 @@ class SpecialistProfile extends React.Component {
               </svg>
             </a>
 
-            {/* Tags = Services */}
             <div className="tag-pills">
               {services.map((item) => (
                 <span
@@ -522,7 +541,6 @@ class SpecialistProfile extends React.Component {
               </a>
             </div>
 
-            {/* Services */}
             <div className="spty-scroll">
               {services.map((item) => (
                 <SpecialtyItem
@@ -562,7 +580,9 @@ class SpecialistProfile extends React.Component {
                   avatar={this.getInitials(item.user)}
                   name={
                     item.user
-                      ? `${item.user.first_name || ""} ${item.user.last_name || ""}`.trim()
+                      ? `${item.user.first_name || ""} ${
+                          item.user.last_name || ""
+                        }`.trim()
                       : "مراجع"
                   }
                   stars={"★".repeat(item.staff_rating || 0)}
@@ -600,7 +620,6 @@ class SpecialistProfile extends React.Component {
               </a>
             </div>
 
-            {/* فعلاً هاردکد چون API زمان‌های خالی را نمی‌فرستد */}
             <div className="date-scroll" id="dateScroll">
               <button className="date-card active">
                 <div className="date-day">امروز</div>
@@ -662,7 +681,7 @@ class SpecialistProfile extends React.Component {
             </div>
 
             <div className="cred-card cred-card-no-margin">
-              {doctor.credentials.map((item) => (
+              {credentials.map((item) => (
                 <CredentialItem
                   key={item.id}
                   title={item.title}
@@ -688,4 +707,4 @@ class SpecialistProfile extends React.Component {
   }
 }
 
-export default SpecialistProfile;
+export default withRouter(SpecialistProfile);
