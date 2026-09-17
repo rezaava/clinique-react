@@ -15,30 +15,30 @@ import Appointments from './pages/Appointments/AppointmentsComponent';
 
 function App() {
   return (
-  <div className="page-outer">
-    <div className="app-shell">
-    <BrowserRouter>
+    <div className="page-outer">
+      <div className="app-shell">
+      <BrowserRouter>
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route path="/services" element={<Services />} />
-        <Route path="/service-detail/:id" element={<ServiceDetail />}/>
+          <Route path="/services" element={<Services />} />
+          <Route path="/service-detail/:id" element={<ServiceDetail />}/>
 
-        <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
+          <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
 
-        <Route path="/profile" element={<Profile />}/>
-        <Route path="/journey" element={<Journey />}/>
+          <Route path="/profile" element={<Profile />}/>
+          <Route path="/journey" element={<Journey />}/>
 
-        <Route path="/appointments" element={<Appointments />}/>
+          <Route path="/appointments" element={<Appointments />}/>
 
-        <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
-      </Routes>
+          <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
+        </Routes>
 
-      <Footer/>
-    </BrowserRouter>
+        <Footer/>
+      </BrowserRouter>
+      </div>
     </div>
-  </div>
   );
 }
 
