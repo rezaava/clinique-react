@@ -1,8 +1,9 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 class AppointmentItem extends React.Component {
   render() {
     const {
+      id,
       avatar,
       name,
       provider,
@@ -11,7 +12,6 @@ class AppointmentItem extends React.Component {
       date,
       time,
       duration,
-      detailStatus,
       showSolidButton = false,
       noMargin = false,
     } = this.props;
@@ -19,17 +19,25 @@ class AppointmentItem extends React.Component {
     return (
       <div
         className={`appt-card ${noMargin ? "mb-0" : ""}`}
-        style={noMargin ? { marginBottom: 0 } : {}}
       >
         <div className="appt-card-top">
-          <span className="appt-avatar2">{avatar}</span>
+          <span className="appt-avatar2">
+            {avatar}
+          </span>
 
           <div className="appt-card-info">
-            <div className="appt-card-name">{name}</div>
-            <div className="appt-card-provider">{provider}</div>
+            <div className="appt-card-name">
+              {name}
+            </div>
+
+            <div className="appt-card-provider">
+              {provider}
+            </div>
           </div>
 
-          <span className={`status-pill ${statusClass}`}>
+          <span
+            className={`status-pill ${statusClass}`}
+          >
             {status}
           </span>
         </div>
@@ -46,7 +54,13 @@ class AppointmentItem extends React.Component {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="18"
+                rx="2"
+              />
               <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
 
@@ -64,7 +78,11 @@ class AppointmentItem extends React.Component {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <circle cx="12" cy="12" r="10" />
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
               <path d="M12 6v6l4 2" />
             </svg>
 
@@ -74,12 +92,12 @@ class AppointmentItem extends React.Component {
 
         {showSolidButton ? (
           <div className="appt-card-btns">
-            <a
-              href={`client-appointment-detail.html?status=${detailStatus}`}
-              className="btn-sm-outline"
-            >
-              مشاهده جزئیات
-            </a>
+          <Link
+            to={`/appointments/detail/${id}`}
+            className="btn-sm-outline"
+          >
+            مشاهده جزئیات
+          </Link>
 
             <button className="btn-sm-solid">
               رزرو مجدد
@@ -87,9 +105,8 @@ class AppointmentItem extends React.Component {
           </div>
         ) : (
           <a
-            href={`client-appointment-detail.html?status=${detailStatus}`}
+            href={`/appointment/${id}`}
             className="btn-sm-outline"
-            style={{ display: "block" }}
           >
             مشاهده جزئیات
           </a>

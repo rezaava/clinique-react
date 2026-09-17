@@ -1,11 +1,54 @@
 import React from "react";
 import "./../../css/Appointments.css";
-
 import AppointmentItem from "./AppointmentItemComponent";
+import { Link } from "react-router-dom";
 
 class Appointments extends React.Component {
   state = {
     activeTab: "upcoming",
+    appointments: {
+      upcoming: [],
+      past: [],
+      cancelled: [],
+    },
+    loading: true,
+    error: null,
+  };
+
+  componentDidMount() {
+    this.getAppointments();
+  }
+
+  getAppointments = () => {
+    fetch("http://localhost:8000/api/appointments")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("خطا در دریافت نوبت‌ها");
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message || "نوبت‌ها دریافت نشدند."
+          );
+        }
+
+        this.setState({
+          appointments: result.data,
+          loading: false,
+          error: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          loading: false,
+          error: error.message,
+        });
+      });
   };
 
   handleTabChange = (tab) => {
@@ -14,13 +57,144 @@ class Appointments extends React.Component {
     });
   };
 
+  getProviderName = (appointment) => {
+    const staff = appointment?.assigned_staff;
+
+    if (!staff) {
+      return "پزشک / متخصص";
+    }
+
+    return (
+      staff.name ||
+      `${staff.first_name || ""} ${staff.last_name || ""}`.trim() ||
+      "پزشک / متخصص"
+    );
+  };
+
+  getAvatar = (appointment) => {
+    const name = this.getProviderName(appointment);
+
+    const parts = name
+      .replace("دکتر", "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}‌${parts[1].charAt(0)}`;
+    }
+
+    if (parts.length === 1) {
+      return parts[0].substring(0, 2);
+    }
+
+    return "د";
+  };
+
+  getStatus = (appointment) => {
+    const statuses = {
+      confirmed: {
+        text: "تأیید شده",
+        className: "confirmed",
+      },
+      completed: {
+        text: "تکمیل‌شده",
+        className: "completed",
+      },
+      cancelled: {
+        text: "لغوشده",
+        className: "cancelled",
+      },
+    };
+
+    return (
+      statuses[appointment?.status] || {
+        text: appointment?.status || "نامشخص",
+        className: "completed",
+      }
+    );
+  };
+
+  renderAppointmentItem = (appointment, showSolidButton = false, noMargin = false) => {
+    const status = this.getStatus(appointment);
+
+    return (
+      <AppointmentItem
+        key={appointment.id}
+        id={appointment.id}
+        avatar={this.getAvatar(appointment)}
+        name={
+          appointment.service?.name ||
+          appointment.service?.title ||
+          "خدمت زیبایی"
+        }
+        provider={this.getProviderName(appointment)}
+        status={status.text}
+        statusClass={status.className}
+        date={appointment.appointment_date_fa}
+        time={appointment.appointment_time_fa}
+        duration={`${this.formatNumber(
+          appointment.duration_minutes
+        )} دقیقه`}
+        detailStatus={appointment.status}
+        showSolidButton={showSolidButton}
+        noMargin={noMargin}
+      />
+    );
+  };
+
+  formatNumber = (number) => {
+    return new Intl.NumberFormat("fa-IR").format(
+      Number(number || 0)
+    );
+  };
+
   render() {
-    const { activeTab } = this.state;
+    const {
+      activeTab,
+      appointments,
+      loading,
+      error,
+    } = this.state;
+
+    if (loading) {
+      return (
+        <div className="scroll-area">
+          <div className="tab-panel active">
+            <div className="sec-label">
+              در حال دریافت نوبت‌ها...
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="scroll-area">
+          <div className="tab-panel active">
+            <div className="sec-label">
+              {error}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const upcoming = appointments.upcoming || [];
+    const past = appointments.past || [];
+    const cancelled = appointments.cancelled || [];
+
+    const nextAppointment = upcoming[0];
+    const otherUpcoming = upcoming.slice(1);
 
     return (
       <>
         <header className="appt-header">
-          <button className="bell-btn" aria-label="اعلان‌ها">
+          <button
+            className="bell-btn"
+            aria-label="اعلان‌ها"
+          >
             <span className="bell-dot"></span>
 
             <svg
@@ -38,13 +212,14 @@ class Appointments extends React.Component {
           </button>
         </header>
 
-        {/* Tabs */}
         <div className="tabs-row">
           <button
             className={`tab-btn ${
               activeTab === "upcoming" ? "active" : ""
             }`}
-            onClick={() => this.handleTabChange("upcoming")}
+            onClick={() =>
+              this.handleTabChange("upcoming")
+            }
           >
             پیش‌رو
           </button>
@@ -53,7 +228,9 @@ class Appointments extends React.Component {
             className={`tab-btn ${
               activeTab === "past" ? "active" : ""
             }`}
-            onClick={() => this.handleTabChange("past")}
+            onClick={() =>
+              this.handleTabChange("past")
+            }
           >
             گذشته
           </button>
@@ -62,173 +239,200 @@ class Appointments extends React.Component {
             className={`tab-btn ${
               activeTab === "cancelled" ? "active" : ""
             }`}
-            onClick={() => this.handleTabChange("cancelled")}
+            onClick={() =>
+              this.handleTabChange("cancelled")
+            }
           >
             لغوشده
           </button>
         </div>
 
         <div className="scroll-area">
-          {/* ==================== UPCOMING ==================== */}
-
           {activeTab === "upcoming" && (
             <div className="tab-panel active">
-              <div className="sec-label">
-                نوبت بعدی
-              </div>
+              {nextAppointment ? (
+                <>
+                  <div className="sec-label">
+                    نوبت بعدی
+                  </div>
 
-              {/* Next appointment */}
-              <div className="next-appt-card">
-                <div className="next-appt-top">
-                  <span className="next-appt-eyebrow">
-                    مراقبت پوست
-                  </span>
+                  <div className="next-appt-card">
+                    <div className="next-appt-top">
+                      <span className="next-appt-eyebrow">
+                        {nextAppointment.service?.category ||
+                          nextAppointment.service?.category_name ||
+                          "خدمات زیبایی"}
+                      </span>
 
-                  <span className="status-pill on-dark">
-                    تأیید شده
-                  </span>
-                </div>
-
-                <div className="next-appt-title">
-                  درمان آبرسانی صورت
-                </div>
-
-                <div className="next-appt-provider">
-                  <span className="appt-avatar">
-                    ل‌ا
-                  </span>
-
-                  <div>
-                    <div className="next-appt-pname">
-                      دکتر لیلا احمدی
+                      <span className="status-pill on-dark">
+                        {this.getStatus(nextAppointment).text}
+                      </span>
                     </div>
 
-                    <div className="next-appt-prole">
-                      متخصص ارشد زیبایی
+                    <div className="next-appt-title">
+                      {nextAppointment.service?.name ||
+                        nextAppointment.service?.title ||
+                        "خدمت زیبایی"}
+                    </div>
+
+                    <div className="next-appt-provider">
+                      <span className="appt-avatar">
+                        {this.getAvatar(nextAppointment)}
+                      </span>
+
+                      <div>
+                        <div className="next-appt-pname">
+                          {this.getProviderName(nextAppointment)}
+                        </div>
+
+                        <div className="next-appt-prole">
+                          {nextAppointment.assigned_staff?.ability ||
+                            "پزشک / متخصص"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="next-appt-datebox">
+                      <span>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="18"
+                            rx="2"
+                          />
+                          <path d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+
+                        {nextAppointment.appointment_date_fa}
+                      </span>
+
+                      <span className="sep2"></span>
+
+                      <span>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                          />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+
+                        {nextAppointment.appointment_time_fa} ·{" "}
+                        {this.formatNumber(
+                          nextAppointment.duration_minutes
+                        )}{" "}
+                        دقیقه
+                      </span>
+                    </div>
+
+                    <div className="next-appt-deposit">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                        />
+                        <path d="m9 12 2 2 4-4" />
+                      </svg>
+
+                      {nextAppointment.payment_status === "paid"
+                        ? `پرداخت کامل · ${this.formatNumber(
+                            nextAppointment.transaction?.paid_amount ||
+                              nextAppointment.amount
+                          )} تومان`
+                        : `بیعانه پرداخت شد · ${this.formatNumber(
+                            nextAppointment.transaction?.paid_amount ||
+                              nextAppointment.deposit_amount
+                          )} تومان`}
+                    </div>
+
+                    <div className="next-appt-btns">
+                      <Link
+                        to={`/appointments/detail/${nextAppointment.id}`}
+                        className="btn-white"
+                      >
+                        مشاهده جزئیات
+                      </Link>
+
+                      <button className="btn-ghost-white">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m3 11 19-9-9 19-2-8-8-2z" />
+                        </svg>
+
+                        مسیریابی
+                      </button>
                     </div>
                   </div>
+
+                  {otherUpcoming.length > 0 && (
+                    <>
+                      <div className="also-head">
+                        <span
+                          className="sec-label"
+                          style={{ marginBottom: 0 }}
+                        >
+                          سایر نوبت‌های پیش‌رو
+                        </span>
+
+                        <span className="also-more-link">
+                          {this.formatNumber(otherUpcoming.length)} مورد دیگر
+                        </span>
+                      </div>
+
+                      {otherUpcoming.map((appointment) =>
+                        this.renderAppointmentItem(
+                          appointment
+                        )
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="sec-label">
+                  نوبت پیش‌رویی وجود ندارد.
                 </div>
-
-                <div className="next-appt-datebox">
-                  <span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="18"
-                        rx="2"
-                      />
-                      <path d="M16 2v4M8 2v4M3 10h18" />
-                    </svg>
-
-                    فردا، چهارشنبه ۱۸ شهریور
-                  </span>
-
-                  <span className="sep2"></span>
-
-                  <span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 6v6l4 2" />
-                    </svg>
-
-                    ۱۱:۰۰ · ۶۰ دقیقه
-                  </span>
-                </div>
-
-                <div className="next-appt-deposit">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="m9 12 2 2 4-4" />
-                  </svg>
-
-                  بیعانه پرداخت شد · ۲۵۰٬۰۰۰ تومان
-                </div>
-
-                <div className="next-appt-btns">
-                  <a
-                    href="client-appointment-detail.html?status=confirmed"
-                    className="btn-white"
-                  >
-                    مشاهده جزئیات
-                  </a>
-
-                  <button className="btn-ghost-white">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m3 11 19-9-9 19-2-8-8-2z" />
-                    </svg>
-
-                    مسیریابی
-                  </button>
-                </div>
-              </div>
-
-              {/* Other upcoming appointments */}
-              <div className="also-head">
-                <span
-                  className="sec-label"
-                  style={{ marginBottom: 0 }}
-                >
-                  سایر نوبت‌های پیش‌رو
-                </span>
-
-                <span className="also-more-link">
-                  ۱ مورد دیگر
-                </span>
-              </div>
-
-              <AppointmentItem
-                avatar="س‌ر"
-                name="اصلاح و رنگ ابرو"
-                provider="سوگند رسولی"
-                status="تأیید شده"
-                statusClass="confirmed"
-                date="دوشنبه، ۱۸ شهریور"
-                time="۱۴:۳۰"
-                duration="۴۵ دقیقه"
-                detailStatus="confirmed"
-              />
+              )}
             </div>
           )}
-
-          {/* ==================== PAST ==================== */}
 
           {activeTab === "past" && (
             <div className="tab-panel active">
@@ -236,49 +440,21 @@ class Appointments extends React.Component {
                 نوبت‌های گذشته
               </div>
 
-              <AppointmentItem
-                avatar="ن‌ک"
-                name="ماساژ عمقی پشت"
-                provider="نادیا کریمی"
-                status="تکمیل‌شده"
-                statusClass="completed"
-                date="سه‌شنبه، ۱۵ مرداد"
-                time="۱۰:۰۰"
-                duration="۷۵ دقیقه"
-                detailStatus="completed"
-                showSolidButton={true}
-              />
-
-              <AppointmentItem
-                avatar="ل‌ا"
-                name="لایه‌برداری شیمیایی سبک"
-                provider="دکتر لیلا احمدی"
-                status="تکمیل‌شده"
-                statusClass="completed"
-                date="پنجشنبه، ۲ مرداد"
-                time="۱۳:۰۰"
-                duration="۵۰ دقیقه"
-                detailStatus="completed"
-                showSolidButton={true}
-              />
-
-              <AppointmentItem
-                avatar="س‌ر"
-                name="لیفت و رنگ مژه"
-                provider="سوگند رسولی"
-                status="تکمیل‌شده"
-                statusClass="completed"
-                date="شنبه، ۲۱ تیر"
-                time="۱۵:۳۰"
-                duration="۶۰ دقیقه"
-                detailStatus="completed"
-                showSolidButton={true}
-                noMargin={true}
-              />
+              {past.length > 0 ? (
+                past.map((appointment) =>
+                  this.renderAppointmentItem(
+                    appointment,
+                    true,
+                    appointment.id === past[past.length - 1]?.id
+                  )
+                )
+              ) : (
+                <div className="sec-label">
+                  نوبت گذشته‌ای وجود ندارد.
+                </div>
+              )}
             </div>
           )}
-
-          {/* ==================== CANCELLED ==================== */}
 
           {activeTab === "cancelled" && (
             <div className="tab-panel active">
@@ -286,23 +462,22 @@ class Appointments extends React.Component {
                 نوبت‌های لغوشده
               </div>
 
-              <AppointmentItem
-                avatar="ن‌ک"
-                name="اسکراب و پک بدن کامل"
-                provider="نادیا کریمی"
-                status="لغوشده"
-                statusClass="cancelled"
-                date="پنجشنبه، ۲۴ مرداد"
-                time="۱۲:۰۰"
-                duration="۹۰ دقیقه"
-                detailStatus="cancelled"
-                showSolidButton={true}
-                noMargin={true}
-              />
+              {cancelled.length > 0 ? (
+                cancelled.map((appointment) =>
+                  this.renderAppointmentItem(
+                    appointment,
+                    true,
+                    appointment.id === cancelled[cancelled.length - 1]?.id
+                  )
+                )
+              ) : (
+                <div className="sec-label">
+                  نوبت لغوشده‌ای وجود ندارد.
+                </div>
+              )}
             </div>
           )}
 
-          {/* New appointment */}
           <a
             href="client-consultation-flow.html"
             className="fab-book"
@@ -322,7 +497,6 @@ class Appointments extends React.Component {
             رزرو جدید
           </a>
         </div>
-
       </>
     );
   }
