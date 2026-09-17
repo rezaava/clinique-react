@@ -11,6 +11,7 @@ import Profile from './pages/Profile/ProfileComponent';
 import Journey from './pages/Journey/JourneyComponent';
 import AppointmentsDet from './pages/Appointments/AppointmentsDetailComponent';
 import Appointments from './pages/Appointments/AppointmentsComponent';
+import Consultation from './pages/Consultation/ConsultationComponent';
 
 
 function App() {
@@ -31,8 +32,9 @@ function App() {
           <Route path="/journey" element={<Journey />}/>
 
           <Route path="/appointments" element={<Appointments />}/>
-
           <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
+
+          <Route path="/consultation" element={<Consultation />}/>
         </Routes>
 
         <Footer/>
