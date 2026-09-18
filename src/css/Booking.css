@@ -1,0 +1,148 @@
+.page-outer { min-height:100vh; display:flex; justify-content:center; }
+.app-shell { width:100%; max-width:460px; min-height:100vh; background:var(--cream); display:flex; flex-direction:column; position:relative; box-shadow:var(--shadow-lg); }
+@media (min-width:520px) {
+  .page-outer { padding:10px 0; align-items:flex-start; }
+  .app-shell { min-height:calc(100vh - 56px); height:844px; border-radius:36px; overflow:hidden; }
+}
+
+.page-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; flex-shrink:0; position:relative; }
+.icon-btn { width:38px; height:38px; border-radius:50%; background:var(--card); border:1px solid var(--border); display:grid; place-items:center; color:var(--ink-2); transition:all .18s ease; flex-shrink:0; }
+.icon-btn:hover { border-color:var(--border-2); color:var(--brand); }
+.page-title { position:absolute; inset-inline:0; text-align:center; font-size:1.05rem; font-weight:700; pointer-events:none; }
+
+/* استپر مراحل */
+.stepper-wrap { padding:14px 20px 6px; flex-shrink:0; }
+.stepper-bars { display:flex; gap:5px; margin-bottom:9px; }
+.step-bar { flex:1; height:3px; border-radius:20px; background:var(--border-2); overflow:hidden; }
+.step-bar-fill { height:100%; width:0; background:var(--brand); border-radius:20px; transition:width .35s ease; }
+.step-bar.done .step-bar-fill { width:100%; }
+.step-bar.active .step-bar-fill { width:100%; }
+.stepper-labels { display:flex; }
+.step-label { flex:1; text-align:center; font-size:.66rem; font-weight:700; letter-spacing:.03em; color:var(--ink-3); }
+.step-label.active { color:var(--ink); }
+
+.scroll-area { flex:1; overflow-y:auto; padding:16px 20px 110px; }
+.screen { display:none; }
+.screen.active { display:block; }
+
+.hint-line { color:var(--ink-2); font-size:.9rem; margin-bottom:16px; }
+
+/* ---- STEP 1: خدمت ---- */
+.svc-pick { display:flex; align-items:flex-start; gap:13px; background:var(--card); border:1.5px solid var(--border); border-radius:var(--r-lg); padding:15px; margin-bottom:12px; box-shadow:var(--shadow-sm); transition:all .18s ease; cursor:pointer; position:relative; }
+.svc-pick:last-of-type { margin-bottom:0; }
+.svc-pick:hover { border-color:var(--border-2); }
+.svc-pick.selected { border-color:var(--brand); background:var(--brand-soft); }
+.svc-pick-thumb { width:44px; height:44px; border-radius:12px; background:var(--gold-soft); color:var(--gold); display:grid; place-items:center; flex-shrink:0; }
+.svc-pick-body { flex:1; min-width:0; }
+.svc-pick-name { font-weight:700; font-size:.94rem; }
+.svc-pick-desc { font-size:.82rem; color:var(--ink-2); margin-top:3px; line-height:1.5; }
+.svc-pick-meta { display:flex; align-items:center; gap:12px; margin-top:9px; font-size:.8rem; }
+.svc-pick-dur { display:flex; align-items:center; gap:5px; color:var(--ink-3); }
+.svc-pick-price { color:var(--brand); font-weight:700; }
+.svc-check { position:absolute; top:15px; inset-inline-start:15px; width:24px; height:24px; border-radius:50%; border:2px solid var(--border-2); background:var(--card); display:grid; place-items:center; color:#fff; flex-shrink:0; }
+.svc-pick.selected .svc-check { background:var(--brand); border-color:var(--brand); }
+.svc-check svg { opacity:0; }
+.svc-pick.selected .svc-check svg { opacity:1; }
+
+/* ---- STEP 2: تاریخ (تقویم شمسی) ---- */
+.cal-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:18px; box-shadow:var(--shadow-sm); margin-bottom:18px; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-month-btn { width:34px; height:34px; border-radius:50%; background:var(--cream); border:1px solid var(--border); display:grid; place-items:center; color:var(--ink-2); transition:all .18s ease; }
+.cal-month-btn:hover { border-color:var(--brand); color:var(--brand); }
+.cal-month-title { font-weight:800; font-size:1.05rem; }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px; }
+.cal-weekdays span { text-align:center; font-size:.72rem; font-weight:700; color:var(--ink-3); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-day { aspect-ratio:1; display:grid; place-items:center; border-radius:50%; font-size:.86rem; font-weight:600; cursor:pointer; color:var(--ink); border:2px solid transparent; transition:all .15s ease; font-variant-numeric:tabular-nums; }
+.cal-day:hover:not(.empty):not(.unavail) { background:var(--brand-soft); }
+.cal-day.empty { cursor:default; visibility:hidden; }
+.cal-day.unavail { color:var(--ink-3); opacity:.4; cursor:not-allowed; text-decoration:line-through; }
+.cal-day.today { border-color:var(--border-2); color:var(--brand); }
+.cal-day.selected { background:var(--brand); color:#fff; border-color:var(--brand); }
+.cal-legend { display:flex; gap:16px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.leg-item { display:flex; align-items:center; gap:6px; font-size:.78rem; color:var(--ink-2); }
+.leg-dot { width:13px; height:13px; border-radius:50%; flex-shrink:0; }
+.leg-dot.sel { background:var(--brand); }
+.leg-dot.tod { border:2px solid var(--border-2); }
+.leg-dot.una { background:var(--border-2); }
+.date-confirm { background:var(--brand-soft); border-radius:var(--r-md); padding:14px 16px; }
+.date-confirm-t { font-weight:700; font-size:.92rem; color:var(--brand-dark); }
+.date-confirm-s { font-size:.8rem; color:var(--ink-2); margin-top:3px; }
+
+/* ---- STEP 3: زمان ---- */
+.date-chip { display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:9px 16px; font-size:.86rem; font-weight:600; margin-bottom:18px; }
+.spec-label { font-size:.72rem; font-weight:700; color:var(--ink-3); letter-spacing:.06em; margin-bottom:11px; }
+.spec-pick { display:flex; align-items:center; gap:12px; background:var(--card); border:1.5px solid var(--border); border-radius:var(--r-lg); padding:12px 14px; margin-bottom:10px; cursor:pointer; transition:all .18s ease; }
+.spec-pick:last-of-type { margin-bottom:22px; }
+.spec-pick.selected { border-color:var(--brand); background:var(--brand-soft); }
+.spec-pick-av { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--rose),var(--brand)); color:#fff; display:grid; place-items:center; font-weight:700; font-size:.8rem; flex-shrink:0; }
+.spec-pick-info { flex:1; min-width:0; }
+.spec-pick-name { font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:6px; }
+.spec-pick-name svg { color:var(--brand); flex-shrink:0; }
+.spec-pick-role { font-size:.78rem; color:var(--ink-2); margin-top:1px; }
+.spec-pick-rate { font-size:.78rem; color:var(--ink-2); margin-top:3px; display:flex; align-items:center; gap:4px; }
+.spec-pick-rate svg { color:var(--gold); }
+.spec-pick-link { font-size:.8rem; font-weight:700; color:var(--brand); white-space:nowrap; }
+
+.time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:18px; }
+.time-slot { padding:11px 4px; text-align:center; border-radius:var(--r-md); border:1.5px solid var(--border); background:var(--card); font-weight:700; font-size:.84rem; font-variant-numeric:tabular-nums; cursor:pointer; transition:all .15s ease; }
+.time-slot:hover:not(.unavail) { border-color:var(--border-2); }
+.time-slot.unavail { color:var(--ink-3); opacity:.4; cursor:not-allowed; background:transparent; }
+.time-slot.selected { background:var(--brand); color:#fff; border-color:var(--brand); }
+.time-confirm { background:var(--brand-soft); border-radius:var(--r-md); padding:13px 16px; font-size:.88rem; font-weight:700; color:var(--brand-dark); }
+
+/* ---- STEP 4: خلاصه ---- */
+.summary-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+.summary-row { display:flex; justify-content:space-between; align-items:center; padding:15px 16px; border-bottom:1px solid var(--border); gap:10px; }
+.summary-row:last-child { border-bottom:none; }
+.summary-row-l { min-width:0; }
+.summary-label { font-size:.7rem; font-weight:700; color:var(--ink-3); letter-spacing:.05em; }
+.summary-value { font-weight:700; font-size:.94rem; margin-top:3px; }
+.summary-change { font-size:.82rem; font-weight:700; color:var(--brand); white-space:nowrap; }
+
+.price-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:14px; }
+.price-row { display:flex; justify-content:space-between; padding:13px 16px; font-size:.9rem; }
+.price-row .l { color:var(--ink-2); }
+.price-row .v { font-weight:700; }
+.price-row.total { background:var(--brand-soft); }
+.price-row.total .l { color:var(--brand-dark); font-weight:700; }
+.price-row.total .v { color:var(--brand-dark); font-size:1.05rem; }
+.price-row.deposit .v { color:var(--gold); }
+
+.cancel-note { text-align:center; font-size:.78rem; color:var(--ink-3); margin-bottom:6px; }
+
+/* ---- STEP 5: بیعانه/پرداخت ---- */
+.pay-summary-card { background:var(--card); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-sm); margin-bottom:18px; border:1px solid var(--border); }
+.pay-summary-top { padding:16px; }
+.pay-summary-row { display:flex; justify-content:space-between; padding:5px 0; font-size:.9rem; }
+.pay-summary-row .l { color:var(--ink-2); }
+.pay-summary-row .v { font-weight:700; }
+.pay-today { background:var(--brand-soft); padding:16px; display:flex; justify-content:space-between; align-items:flex-start; }
+.pay-today-l { font-weight:700; font-size:.96rem; color:var(--brand-dark); }
+.pay-today-s { font-size:.78rem; color:var(--ink-2); margin-top:4px; max-width:220px; }
+.pay-today-v { font-size:1.5rem; font-weight:800; color:var(--brand-dark); font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+.pm-label { font-size:.72rem; font-weight:700; color:var(--ink-3); letter-spacing:.06em; margin-bottom:11px; }
+.pm-option { display:flex; align-items:center; gap:13px; background:var(--card); border:1.5px solid var(--border); border-radius:var(--r-lg); padding:14px 15px; margin-bottom:10px; cursor:pointer; transition:all .18s ease; }
+.pm-option:hover { border-color:var(--border-2); }
+.pm-option.selected { border-color:var(--brand); background:var(--brand-soft); }
+.pm-logo { width:42px; height:42px; border-radius:11px; display:grid; place-items:center; flex-shrink:0; font-weight:800; font-size:.82rem; color:#fff; }
+.pm-name { flex:1; font-weight:700; font-size:.92rem; }
+.pm-radio { width:22px; height:22px; border-radius:50%; border:2px solid var(--border-2); flex-shrink:0; display:grid; place-items:center; }
+.pm-option.selected .pm-radio { border-color:var(--brand); background:var(--brand); color:#fff; }
+.pm-radio svg { opacity:0; }
+.pm-option.selected .pm-radio svg { opacity:1; }
+
+.secure-note { text-align:center; font-size:.8rem; color:var(--ink-3); margin:18px 0; line-height:1.7; }
+
+/* ---- نوار پایین ثابت ---- */
+.bottom-bar { flex-shrink:0; padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px)); background:var(--cream); border-top:1px solid var(--border); }
+.help-line { text-align:center; font-size:.84rem; color:var(--ink-2); margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:7px; }
+.help-line a { color:var(--brand); font-weight:700; }
+.continue-btn { width:100%; padding:16px; border-radius:22px; background:var(--brand); color:#fff; font-weight:700; font-size:.96rem; text-align:center; transition:filter .18s ease,opacity .18s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
+.continue-btn:hover { filter:brightness(1.08); }
+.continue-btn.disabled { opacity:.4; pointer-events:none; }
+.skip-line { text-align:center; margin-top:12px; }
+.skip-line button { font-size:.86rem; color:var(--ink-3); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+
+@media (prefers-reduced-motion:reduce) { *,*::after,*::before { animation:none!important; transition:none!important; } }

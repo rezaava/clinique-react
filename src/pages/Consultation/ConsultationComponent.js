@@ -248,7 +248,7 @@ class Consultation extends React.Component {
         };
       }
 
-      this.props.navigate("/service-detail");
+      this.props.navigate("/services");
 
       return null;
     });
@@ -500,15 +500,9 @@ class Consultation extends React.Component {
 
         <p className="book-direct-link">
           از قبل می‌دونید چی می‌خواید؟{" "}
-          <a
-            href="/service-detail"
-            onClick={(e) => {
-              e.preventDefault();
-              this.props.navigate("/service-detail");
-            }}
-          >
+          <Link to="/services">
             رزرو مستقیم ←
-          </a>
+          </Link>
         </p>
       </div>
     );
@@ -617,15 +611,9 @@ class Consultation extends React.Component {
 
         <p className="book-direct-link book-direct-top">
           از قبل می‌دونید چی می‌خواید؟{" "}
-          <a
-            href="/service-detail"
-            onClick={(e) => {
-              e.preventDefault();
-              this.props.navigate("/service-detail");
-            }}
-          >
+          <Link to="/services">
             رزرو مستقیم ←
-          </a>
+          </Link>
         </p>
       </div>
     );
@@ -722,15 +710,9 @@ class Consultation extends React.Component {
 
         <p className="book-direct-link">
           از قبل می‌دونید چی می‌خواید؟{" "}
-          <a
-            href="/service-detail"
-            onClick={(e) => {
-              e.preventDefault();
-              this.props.navigate("/service-detail");
-            }}
-          >
+          <Link to="/services">
             رزرو مستقیم ←
-          </a>
+          </Link>
         </p>
       </div>
     );
@@ -1041,7 +1023,7 @@ class Consultation extends React.Component {
           </p>
 
           <Link
-            to="/service-detail"
+            to="/services"
             className="btn-solid-full"
           >
             رزرو نوبت

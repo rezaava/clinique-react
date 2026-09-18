@@ -12,33 +12,36 @@ import Journey from './pages/Journey/JourneyComponent';
 import AppointmentsDet from './pages/Appointments/AppointmentsDetailComponent';
 import Appointments from './pages/Appointments/AppointmentsComponent';
 import Consultation from './pages/Consultation/ConsultationComponent';
+import Booking from './pages/Booking/BookingComponent';
 
 
 function App() {
   return (
     <div className="page-outer">
       <div className="app-shell">
-      <BrowserRouter>
+        <BrowserRouter>
 
-        <Routes>
-          <Route path="/" element={<Home />} />
+          <Routes>
+            <Route path="/" element={<Home />} />
 
-          <Route path="/services" element={<Services />} />
-          <Route path="/service-detail/:id" element={<ServiceDetail />}/>
+            <Route path="/services" element={<Services />} />
+            <Route path="/service-detail/:id" element={<ServiceDetail />}/>
 
-          <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
+            <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
 
-          <Route path="/profile" element={<Profile />}/>
-          <Route path="/journey" element={<Journey />}/>
+            <Route path="/profile" element={<Profile />}/>
+            <Route path="/journey" element={<Journey />}/>
 
-          <Route path="/appointments" element={<Appointments />}/>
-          <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
+            <Route path="/appointments" element={<Appointments />}/>
+            <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
+            <Route path="/booking" element={<Booking />}/>
 
-          <Route path="/consultation" element={<Consultation />}/>
-        </Routes>
+            <Route path="/consultation" element={<Consultation />}/>
 
-        <Footer/>
-      </BrowserRouter>
+          </Routes>
+
+          <Footer/>
+        </BrowserRouter>
       </div>
     </div>
   );
