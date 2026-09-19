@@ -18,100 +18,6 @@ const labels = {
   6: "",
 };
 
-const services = [
-  {
-    id: 1,
-    name: "مراقبت صورت",
-  },
-  {
-    id: 2,
-    name: "لیزر موهای زائد",
-  },
-  {
-    id: 3,
-    name: "بوتاکس و فیلر",
-  },
-  {
-    id: 4,
-    name: "جوان‌سازی پوست",
-  },
-  {
-    id: 5,
-    name: "شکل‌دهی بدن",
-  },
-  {
-    id: 6,
-    name: "ترمیم مو",
-  },
-];
-
-const concerns = [
-  {
-    id: 1,
-    name: "پوست",
-    icon: "skin",
-  },
-  {
-    id: 2,
-    name: "مو",
-    icon: "hair",
-  },
-  {
-    id: 3,
-    name: "صورت",
-    icon: "face",
-  },
-  {
-    id: 4,
-    name: "بدن",
-    icon: "body",
-  },
-  {
-    id: 5,
-    name: "تزریقات",
-    icon: "injection",
-  },
-  {
-    id: 6,
-    name: "لیزر",
-    icon: "laser",
-  },
-  {
-    id: 7,
-    name: "سایر",
-    icon: "more",
-  },
-  {
-    id: 8,
-    name: "نامشخص",
-    icon: "question",
-  },
-];
-
-const specialists = [
-  {
-    id: 1,
-    name: "دکتر لیلا احمدی",
-    initials: "ل‌ا",
-    role: "پزشکی صورت و زیبایی",
-    rate: "۴.۹ · ۹ سال · ۲۳۴ نظر",
-  },
-  {
-    id: 2,
-    name: "دکتر سارا حسینی",
-    initials: "س‌ح",
-    role: "متخصص لیزر و پوست",
-    rate: "۴.۸ · ۷ سال · ۱۸۹ نظر",
-  },
-  {
-    id: 3,
-    name: "دکتر مهسا پاکدل",
-    initials: "م‌پ",
-    role: "تزریقات و شکل‌دهی",
-    rate: "۴.۷ · ۱۱ سال · ۳۱۲ نظر",
-  },
-];
-
 const dates = [
   {
     id: 1,
@@ -197,6 +103,14 @@ class Consultation extends React.Component {
     entryPath: null,
     directService: null,
 
+    services: [],
+    servicesLoading: true,
+    servicesError: null,
+
+    specialists: [],
+    specialistsLoading: true,
+    specialistsError: null,
+
     concerns: [],
     desc: "",
     photoAdded: false,
@@ -224,7 +138,99 @@ class Consultation extends React.Component {
     if (navOuter) {
       navOuter.style.display = "none";
     }
+
+    this.fetchServices();
+    this.fetchSpecialists();
   }
+
+  fetchServices = () => {
+    fetch(
+      "http://127.0.0.1:8000/api/services"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "خطا در دریافت لیست خدمات"
+          );
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+              "لیست خدمات دریافت نشد."
+          );
+        }
+
+        this.setState({
+          services:
+            Array.isArray(result.data)
+              ? result.data
+              : [],
+          servicesLoading: false,
+          servicesError: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          services: [],
+          servicesLoading: false,
+          servicesError:
+            error.message ||
+            "خطا در دریافت خدمات",
+        });
+      });
+  };
+
+  fetchSpecialists = () => {
+    fetch(
+      "http://127.0.0.1:8000/api/doctors"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "خطا در دریافت لیست متخصصین"
+          );
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+              "لیست متخصصین دریافت نشد."
+          );
+        }
+
+        const specialists =
+          result.data &&
+          Array.isArray(result.data.user)
+            ? result.data.user
+            : [];
+
+        this.setState({
+          specialists,
+          specialistsLoading: false,
+          specialistsError: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          specialists: [],
+          specialistsLoading: false,
+          specialistsError:
+            error.message ||
+            "خطا در دریافت متخصصین",
+        });
+      });
+  };
 
   goTo = (step, push = true) => {
     this.setState((prevState) => ({
@@ -238,12 +244,15 @@ class Consultation extends React.Component {
   goBack = () => {
     this.setState((prevState) => {
       if (prevState.stepStack.length > 1) {
-        const newStack = [...prevState.stepStack];
+        const newStack = [
+          ...prevState.stepStack,
+        ];
 
         newStack.pop();
 
         return {
-          currentStep: newStack[newStack.length - 1],
+          currentStep:
+            newStack[newStack.length - 1],
           stepStack: newStack,
         };
       }
@@ -256,16 +265,21 @@ class Consultation extends React.Component {
 
   toggleConcern = (concern) => {
     this.setState((prevState) => {
-      const exists = prevState.concerns.some(
-        (item) => item.id === concern.id
-      );
+      const exists =
+        prevState.concerns.some(
+          (item) => item.id === concern.id
+        );
 
       return {
         concerns: exists
           ? prevState.concerns.filter(
-              (item) => item.id !== concern.id
+              (item) =>
+                item.id !== concern.id
             )
-          : [...prevState.concerns, concern],
+          : [
+              ...prevState.concerns,
+              concern,
+            ],
       };
     });
   };
@@ -285,62 +299,32 @@ class Consultation extends React.Component {
           <path d="M12 17h.01" />
         </>
       ),
+
       check: (
         <>
           <circle cx="12" cy="12" r="10" />
           <path d="m9 12 2 2 4-4" />
         </>
       ),
-      skin: (
-        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z" />
-      ),
-      hair: (
-        <>
-          <circle cx="6" cy="6" r="3" />
-          <circle cx="6" cy="18" r="3" />
-          <path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12" />
-        </>
-      ),
-      face: (
-        <>
-          <circle cx="12" cy="12" r="10" />
-          <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
-        </>
-      ),
-      body: (
-        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z" />
-      ),
-      injection: (
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      ),
-      laser: (
-        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-      ),
-      more: (
-        <>
-          <circle cx="5" cy="12" r="1.4" />
-          <circle cx="12" cy="12" r="1.4" />
-          <circle cx="19" cy="12" r="1.4" />
-        </>
-      ),
+
       user: (
         <>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" />
         </>
       ),
+
       phone: (
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
       ),
+
       upload: (
         <>
           <path d="M12 16V4M8 8l4-4 4 4" />
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </>
       ),
-      star: (
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-      ),
+
       spark: (
         <path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z" />
       ),
@@ -363,7 +347,13 @@ class Consultation extends React.Component {
   };
 
   renderStep0 = () => {
-    const { entryPath, directService } = this.state;
+    const {
+      entryPath,
+      directService,
+      services,
+      servicesLoading,
+      servicesError,
+    } = this.state;
 
     return (
       <div className="wiz-step">
@@ -378,7 +368,9 @@ class Consultation extends React.Component {
         <button
           type="button"
           className={`option-card ${
-            entryPath === "guide" ? "selected" : ""
+            entryPath === "guide"
+              ? "selected"
+              : ""
           }`}
           onClick={() =>
             this.setState(
@@ -408,7 +400,9 @@ class Consultation extends React.Component {
         <button
           type="button"
           className={`option-card ${
-            entryPath === "direct" ? "selected" : ""
+            entryPath === "direct"
+              ? "selected"
+              : ""
           }`}
           onClick={() =>
             this.setState({
@@ -438,33 +432,65 @@ class Consultation extends React.Component {
               انتخاب خدمت
             </div>
 
-            <div className="spty-select-grid">
-              {services.map((service) => (
-                <button
-                  type="button"
-                  key={service.id}
-                  className={`spty-pill ${
-                    directService?.id === service.id
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    this.setState(
-                      {
-                        directService: service,
-                      },
-                      () =>
-                        setTimeout(
-                          () => this.goTo(3),
-                          150
-                        )
+            {servicesLoading && (
+              <div>
+                در حال دریافت خدمات...
+              </div>
+            )}
+
+            {!servicesLoading &&
+              servicesError && (
+                <div>
+                  {servicesError}
+                </div>
+              )}
+
+            {!servicesLoading &&
+              !servicesError &&
+              services.length === 0 && (
+                <div>
+                  خدمتی برای نمایش وجود ندارد.
+                </div>
+              )}
+
+            {!servicesLoading &&
+              !servicesError &&
+              services.length > 0 && (
+                <div className="spty-select-grid">
+                  {services.map(
+                    (service) => (
+                      <button
+                        type="button"
+                        key={service.id}
+                        className={`spty-pill ${
+                          directService?.id ===
+                          service.id
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          this.setState(
+                            {
+                              directService:
+                                service,
+                            },
+                            () =>
+                              setTimeout(
+                                () =>
+                                  this.goTo(
+                                    3
+                                  ),
+                                150
+                              )
+                          )
+                        }
+                      >
+                        {service.name}
+                      </button>
                     )
-                  }
-                >
-                  {service.name}
-                </button>
-              ))}
-            </div>
+                  )}
+                </div>
+              )}
           </div>
         )}
       </div>
@@ -472,7 +498,12 @@ class Consultation extends React.Component {
   };
 
   renderStep1 = () => {
-    const { concerns: selectedConcerns } = this.state;
+    const {
+      services,
+      servicesLoading,
+      servicesError,
+      concerns: selectedConcerns,
+    } = this.state;
 
     return (
       <div className="wiz-step">
@@ -481,22 +512,49 @@ class Consultation extends React.Component {
         </h2>
 
         <p className="wizard-sub">
-          همه موارد مرتبط رو انتخاب کنید — می‌تونید بیشتر از یکی رو انتخاب
-          کنید.
+          همه موارد مرتبط رو انتخاب کنید — می‌تونید بیشتر از یکی رو انتخاب کنید.
         </p>
 
-        <div className="concern-grid">
-          {concerns.map((concern) => (
-            <ConsultationConcernItem
-              key={concern.id}
-              item={concern}
-              selected={selectedConcerns.some(
-                (item) => item.id === concern.id
-              )}
-              onSelect={this.toggleConcern}
-            />
-          ))}
-        </div>
+        {servicesLoading && (
+          <div>
+            در حال دریافت خدمات...
+          </div>
+        )}
+
+        {!servicesLoading &&
+          servicesError && (
+            <div>
+              {servicesError}
+            </div>
+          )}
+
+        {!servicesLoading &&
+          !servicesError &&
+          services.length === 0 && (
+            <div>
+              خدمتی برای نمایش وجود ندارد.
+            </div>
+          )}
+
+        {!servicesLoading &&
+          !servicesError &&
+          services.length > 0 && (
+            <div className="concern-grid">
+              {services.map((service) => (
+                <ConsultationConcernItem
+                  key={service.id}
+                  item={service}
+                  selected={selectedConcerns.some(
+                    (item) =>
+                      item.id === service.id
+                  )}
+                  onSelect={
+                    this.toggleConcern
+                  }
+                />
+              ))}
+            </div>
+          )}
 
         <p className="book-direct-link">
           از قبل می‌دونید چی می‌خواید؟{" "}
@@ -578,7 +636,8 @@ class Consultation extends React.Component {
             this.setState({
               photo: file,
               photoAdded: true,
-              photoPreview: URL.createObjectURL(file),
+              photoPreview:
+                URL.createObjectURL(file),
             });
           }}
         />
@@ -620,7 +679,13 @@ class Consultation extends React.Component {
   };
 
   renderStep3 = () => {
-    const { specMode, specName } = this.state;
+    const {
+      specMode,
+      specName,
+      specialists,
+      specialistsLoading,
+      specialistsError,
+    } = this.state;
 
     return (
       <div className="wiz-step">
@@ -629,14 +694,15 @@ class Consultation extends React.Component {
         </h2>
 
         <p className="wizard-sub">
-          می‌تونید این مرحله رو رد کنید — بهترین متخصص موجود رو معرفی
-          می‌کنیم.
+          می‌تونید این مرحله رو رد کنید — بهترین متخصص موجود رو معرفی می‌کنیم.
         </p>
 
         <button
           type="button"
           className={`option-card ${
-            specMode === "any" ? "selected" : ""
+            specMode === "any"
+              ? "selected"
+              : ""
           }`}
           onClick={() =>
             this.setState({
@@ -690,21 +756,48 @@ class Consultation extends React.Component {
 
         {specMode === "choose" && (
           <div className="mini-spec-list">
-            {specialists.map((specialist) => (
-              <ConsultationSpecialistItem
-                key={specialist.id}
-                specialist={specialist}
-                selected={
-                  specName === specialist.name
-                }
-                onSelect={(item) =>
-                  this.setState({
-                    specName: item.name,
-                    specMode: "choose",
-                  })
-                }
-              />
-            ))}
+            {specialistsLoading && (
+              <div>
+                در حال دریافت متخصصین...
+              </div>
+            )}
+
+            {!specialistsLoading &&
+              specialistsError && (
+                <div>
+                  {specialistsError}
+                </div>
+              )}
+
+            {!specialistsLoading &&
+              !specialistsError &&
+              specialists.length === 0 && (
+                <div>
+                  متخصصی برای نمایش وجود ندارد.
+                </div>
+              )}
+
+            {!specialistsLoading &&
+              !specialistsError &&
+              specialists.map(
+                (specialist) => (
+                  <ConsultationSpecialistItem
+                    key={specialist.id}
+                    specialist={specialist}
+                    selected={
+                      specName ===
+                      `${specialist.first_name} ${specialist.last_name}`
+                    }
+                    onSelect={(item) =>
+                      this.setState({
+                        specName: `${item.first_name} ${item.last_name}`,
+                        specMode:
+                          "choose",
+                      })
+                    }
+                  />
+                )
+              )}
           </div>
         )}
 
@@ -741,8 +834,7 @@ class Consultation extends React.Component {
         </h2>
 
         <p className="wizard-sub">
-          یک زمان مناسب انتخاب کنید یا بذارید نزدیک‌ترین نوبت خالی رو
-          پیدا کنیم.
+          یک زمان مناسب انتخاب کنید یا بذارید نزدیک‌ترین نوبت خالی رو پیدا کنیم.
         </p>
 
         <button
@@ -781,7 +873,8 @@ class Consultation extends React.Component {
               key={date.id}
               date={date}
               selected={
-                selectedDate?.id === date.id
+                selectedDate?.id ===
+                date.id
               }
               onSelect={(item) =>
                 this.setState({
@@ -795,7 +888,8 @@ class Consultation extends React.Component {
         </div>
 
         <div className="time-label">
-          زمان‌های خالی — {dateDay} {dateNum} {dateMon}
+          زمان‌های خالی — {dateDay} {dateNum}{" "}
+          {dateMon}
         </div>
 
         <div className="time-grid2">
@@ -803,7 +897,9 @@ class Consultation extends React.Component {
             <ConsultationTimeItem
               key={item.id}
               time={item}
-              selected={time === item.value}
+              selected={
+                time === item.value
+              }
               onSelect={(selectedTime) =>
                 this.setState({
                   time: selectedTime.value,
@@ -817,7 +913,11 @@ class Consultation extends React.Component {
   };
 
   renderStep5 = () => {
-    const { name, phone, notes } = this.state;
+    const {
+      name,
+      phone,
+      notes,
+    } = this.state;
 
     return (
       <div className="wiz-step">
@@ -826,8 +926,7 @@ class Consultation extends React.Component {
         </h2>
 
         <p className="wizard-sub">
-          برای تأیید نهایی باهاتون تماس می‌گیریم. نیازی به ساخت حساب
-          کاربری نیست.
+          برای تأیید نهایی باهاتون تماس می‌گیریم. نیازی به ساخت حساب کاربری نیست.
         </p>
 
         <div className="field-group">
@@ -921,7 +1020,8 @@ class Consultation extends React.Component {
       ? selectedConcerns
           .map((item) => item.name)
           .join("، ")
-      : directService?.name || "مشخص نشده";
+      : directService?.name ||
+        "مشخص نشده";
 
     const specialist =
       specMode === "choose" && specName
@@ -946,7 +1046,11 @@ class Consultation extends React.Component {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <circle cx="12" cy="12" r="10" />
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
               <path d="m8 12.5 2.5 2.5L16 9" />
             </svg>
           </div>
@@ -956,8 +1060,7 @@ class Consultation extends React.Component {
           </h2>
 
           <p className="confirm-sub">
-            ظرف ۲۴ ساعت آینده برای تأیید نوبتتون باهاتون تماس
-            می‌گیریم.
+            ظرف ۲۴ ساعت آینده برای تأیید نوبتتون باهاتون تماس می‌گیریم.
           </p>
         </div>
 
@@ -1081,8 +1184,10 @@ class Consultation extends React.Component {
     const { currentStep } = this.state;
 
     const showProgress = currentStep !== 0;
+
     const showFooter =
-      currentStep !== 0 && currentStep !== 6;
+      currentStep !== 0 &&
+      currentStep !== 6;
 
     let footerText = "";
 
@@ -1092,7 +1197,8 @@ class Consultation extends React.Component {
         : "رد شو برای الان";
     } else if (currentStep === 2) {
       footerText =
-        this.state.desc || this.state.photoAdded
+        this.state.desc ||
+        this.state.photoAdded
           ? "ادامه"
           : "رد شو برای الان";
     } else if (currentStep === 3) {
@@ -1134,18 +1240,18 @@ class Consultation extends React.Component {
 
           {showProgress && (
             <div className="progress-bar">
-              {Array.from({ length: 6 }).map(
-                (_, index) => (
-                  <div
-                    key={index}
-                    className={`progress-seg ${
-                      index < currentStep
-                        ? "filled"
-                        : ""
-                    }`}
-                  />
-                )
-              )}
+              {Array.from({
+                length: 6,
+              }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`progress-seg ${
+                    index < currentStep
+                      ? "filled"
+                      : ""
+                  }`}
+                />
+              ))}
             </div>
           )}
 
@@ -1159,8 +1265,13 @@ class Consultation extends React.Component {
                 type="button"
                 className="wiz-btn"
                 onClick={() => {
-                  if (currentStep >= 1 && currentStep <= 5) {
-                    this.goTo(currentStep + 1);
+                  if (
+                    currentStep >= 1 &&
+                    currentStep <= 5
+                  ) {
+                    this.goTo(
+                      currentStep + 1
+                    );
                   }
                 }}
               >
