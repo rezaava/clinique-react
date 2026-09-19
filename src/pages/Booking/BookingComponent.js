@@ -5,13 +5,29 @@ import ServiceItem from "./ServiceItemComponent";
 import SpecialistItem from "./SpecialistItemComponent";
 import withRouter from "../withRouter";
 
-const faDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+const faDigits = [
+  "۰",
+  "۱",
+  "۲",
+  "۳",
+  "۴",
+  "۵",
+  "۶",
+  "۷",
+  "۸",
+  "۹",
+];
 
 const toFa = (value) =>
-  String(value).replace(/\d/g, (digit) => faDigits[digit]);
+  String(value).replace(
+    /\d/g,
+    (digit) => faDigits[digit]
+  );
 
 const toman = (number) =>
-  `${toFa(number.toLocaleString("en-US"))} تومان`;
+  `${toFa(
+    Number(number).toLocaleString("en-US")
+  )} تومان`;
 
 const jMonthNames = [
   "فروردین",
@@ -29,82 +45,25 @@ const jMonthNames = [
 ];
 
 const stepDefs = [
-  { label: "خدمت", title: "رزرو نوبت" },
-  { label: "تاریخ", title: "انتخاب تاریخ" },
-  { label: "زمان", title: "انتخاب زمان" },
-  { label: "خلاصه", title: "بازبینی نوبت" },
-  { label: "تأیید", title: "بیعانه نوبت" },
-];
-
-const services = [
   {
-    id: "botox",
-    icon: "sparkle",
-    name: "بوتاکس",
-    desc: "رفع ظریف خطوط بیان با تزریق دقیق",
-    dur: "۳۰ دقیقه",
-    price: 12500000,
+    label: "خدمت",
+    title: "رزرو نوبت",
   },
   {
-    id: "filler",
-    icon: "drop",
-    name: "فیلر پوستی",
-    desc: "بازگرداندن حجم و فرم با اسید هیالورونیک",
-    dur: "۴۵ دقیقه",
-    price: 18700000,
+    label: "تاریخ",
+    title: "انتخاب تاریخ",
   },
   {
-    id: "laser",
-    icon: "zap",
-    name: "لیزر موهای زائد",
-    desc: "کاهش بلندمدت موهای زائد با فناوری پیشرفته",
-    dur: "۶۰ دقیقه",
-    price: 8300000,
+    label: "زمان",
+    title: "انتخاب زمان",
   },
   {
-    id: "rejuv",
-    icon: "leaf",
-    name: "جوان‌سازی پوست",
-    desc: "بازسازی و شادابی پوست با نورجوان‌سازی",
-    dur: "۷۵ دقیقه",
-    price: 14600000,
-  },
-];
-
-const iconPaths = {
-  sparkle:
-    "M12 2l1.9 5.5L19.5 9l-5.6 1.5L12 16l-1.9-5.5L4.5 9l5.6-1.5z",
-  drop:
-    "M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z",
-  zap: "M13 2 3 14h9l-1 8 10-12h-9l1-8z",
-  leaf:
-    "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z",
-};
-
-const specialists = [
-  {
-    id: "sarah",
-    name: "دکتر آناهیتا کریمی",
-    role: "متخصص پوست و زیبایی",
-    rating: "۴.۹",
-    years: "۸ سال",
-    verified: true,
+    label: "خلاصه",
+    title: "بازبینی نوبت",
   },
   {
-    id: "emma",
-    name: "دکتر مریم والی",
-    role: "دکتری پوست",
-    rating: "۴.۸",
-    years: "۱۲ سال",
-    verified: false,
-  },
-  {
-    id: "lisa",
-    name: "لیلا انصاری",
-    role: "متخصص لیزر",
-    rating: "۴.۷",
-    years: "۵ سال",
-    verified: false,
+    label: "تأیید",
+    title: "بیعانه نوبت",
   },
 ];
 
@@ -136,7 +95,20 @@ const unavailTimes = [
 const unavailOffsets = [2, 6, 13];
 
 function gregorianToJalali(gy, gm, gd) {
-  const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  const g_d_m = [
+    0,
+    31,
+    59,
+    90,
+    120,
+    151,
+    181,
+    212,
+    243,
+    273,
+    304,
+    334,
+  ];
 
   let jy = gy <= 1600 ? 0 : 979;
 
@@ -154,9 +126,11 @@ function gregorianToJalali(gy, gm, gd) {
     g_d_m[gm - 1];
 
   jy += 33 * Math.floor(days / 12053);
+
   days %= 12053;
 
   jy += 4 * Math.floor(days / 1461);
+
   days %= 1461;
 
   jy += Math.floor((days - 1) / 365);
@@ -168,7 +142,10 @@ function gregorianToJalali(gy, gm, gd) {
   const jm =
     days < 186
       ? 1 + Math.floor(days / 31)
-      : 7 + Math.floor((days - 186) / 30);
+      : 7 +
+        Math.floor(
+          (days - 186) / 30
+        );
 
   const jd =
     1 +
@@ -190,16 +167,23 @@ function jalaliToGregorian(jy, jm, jd) {
     Math.floor(((jy % 33) + 3) / 4) +
     78 +
     jd +
-    (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
+    (jm < 7
+      ? (jm - 1) * 31
+      : (jm - 7) * 30 + 186);
 
   gy += 400 * Math.floor(days / 146097);
+
   days %= 146097;
 
   let leap = true;
 
   if (days > 36524) {
     days--;
-    gy += 100 * Math.floor(days / 36524);
+
+    gy += 100 * Math.floor(
+      days / 36524
+    );
+
     days %= 36524;
 
     if (days >= 365) {
@@ -210,18 +194,26 @@ function jalaliToGregorian(jy, jm, jd) {
   }
 
   gy += 4 * Math.floor(days / 1461);
+
   days %= 1461;
 
   if (days > 365) {
     leap = false;
-    gy += Math.floor((days - 1) / 365);
-    days = (days - 1) % 365;
+
+    gy += Math.floor(
+      (days - 1) / 365
+    );
+
+    days =
+      (days - 1) % 365;
   }
 
   const sal_a = [
     0,
     31,
-    (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0
+    (gy % 4 === 0 &&
+      gy % 100 !== 0) ||
+    gy % 400 === 0
       ? 29
       : 28,
     31,
@@ -237,6 +229,7 @@ function jalaliToGregorian(jy, jm, jd) {
   ];
 
   let gm = 0;
+
   let gd = days + 1;
 
   for (gm = 0; gm < 13; gm++) {
@@ -252,13 +245,29 @@ function jalaliToGregorian(jy, jm, jd) {
   return [gy, gm, gd];
 }
 
-function jalaliWeekdayIdx(jy, jm, jd) {
-  const [gy, gm, gd] = jalaliToGregorian(jy, jm, jd);
+function jalaliWeekdayIdx(
+  jy,
+  jm,
+  jd
+) {
+  const [gy, gm, gd] =
+    jalaliToGregorian(
+      jy,
+      jm,
+      jd
+    );
 
-  return new Date(gy, gm - 1, gd).getDay();
+  return new Date(
+    gy,
+    gm - 1,
+    gd
+  ).getDay();
 }
 
-function daysInJalaliMonth(jy, jm) {
+function daysInJalaliMonth(
+  jy,
+  jm
+) {
   if (jm <= 6) {
     return 31;
   }
@@ -267,10 +276,16 @@ function daysInJalaliMonth(jy, jm) {
     return 30;
   }
 
-  const [gy] = jalaliToGregorian(jy, 12, 30);
+  const [gy] =
+    jalaliToGregorian(
+      jy,
+      12,
+      30
+    );
 
   const isLeap =
-    ((gy + 1) % 4 === 0 && (gy + 1) % 100 !== 0) ||
+    ((gy + 1) % 4 === 0 &&
+      (gy + 1) % 100 !== 0) ||
     (gy + 1) % 400 === 0;
 
   return isLeap ? 30 : 29;
@@ -282,7 +297,11 @@ class Booking extends React.Component {
 
     const now = new Date();
 
-    const [todayJY, todayJM, todayJD] = gregorianToJalali(
+    const [
+      todayJY,
+      todayJM,
+      todayJD,
+    ] = gregorianToJalali(
       now.getFullYear(),
       now.getMonth() + 1,
       now.getDate()
@@ -290,6 +309,14 @@ class Booking extends React.Component {
 
     this.state = {
       step: 0,
+
+      services: [],
+      servicesLoading: true,
+      servicesError: null,
+
+      doctors: [],
+      doctorsLoading: false,
+      doctorsError: null,
 
       service: null,
 
@@ -316,37 +343,191 @@ class Booking extends React.Component {
   componentDidMount() {
     if (
       window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
+      window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches
     ) {
-      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.setAttribute(
+        "data-theme",
+        "dark"
+      );
     }
 
-    const navOuter = document.querySelector(".bottom-nav");
+    const navOuter =
+      document.querySelector(
+        ".bottom-nav"
+      );
 
     if (navOuter) {
-      navOuter.style.display = "none";
+      navOuter.style.display =
+        "none";
     }
+
+    this.fetchServices();
   }
 
   componentWillUnmount() {
-    const navOuter = document.querySelector(".bottom-nav");
+    const navOuter =
+      document.querySelector(
+        ".bottom-nav"
+      );
 
     if (navOuter) {
-      navOuter.style.display = "";
+      navOuter.style.display =
+        "";
     }
   }
 
-  renderIcon = (path, width = 20, fillOnly = false) => {
+  fetchServices = () => {
+    this.setState({
+      servicesLoading: true,
+      servicesError: null,
+    });
+
+    fetch(
+      "http://127.0.0.1:8000/api/services"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "خطا در دریافت لیست خدمات"
+          );
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+              "لیست خدمات دریافت نشد."
+          );
+        }
+
+        this.setState({
+          services:
+            Array.isArray(
+              result.data
+            )
+              ? result.data
+              : [],
+          servicesLoading: false,
+          servicesError: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          services: [],
+          servicesLoading: false,
+          servicesError:
+            error.message ||
+            "خطا در دریافت خدمات",
+        });
+      });
+  };
+
+  fetchDoctors = (serviceId) => {
+    if (!serviceId) {
+      this.setState({
+        doctors: [],
+        doctorsLoading: false,
+        doctorsError: null,
+      });
+
+      return;
+    }
+
+    this.setState({
+      doctorsLoading: true,
+      doctorsError: null,
+      doctors: [],
+      specialist: null,
+      time: null,
+    });
+
+    fetch(
+      `http://127.0.0.1:8000/api/doctors/${serviceId}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "خطا در دریافت لیست پزشکان"
+          );
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+              "لیست پزشکان دریافت نشد."
+          );
+        }
+
+        const doctors =
+          Array.isArray(
+            result.data?.user
+          )
+            ? result.data.user
+            : [];
+
+        this.setState({
+          doctors,
+          doctorsLoading: false,
+          doctorsError: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          doctors: [],
+          doctorsLoading: false,
+          doctorsError:
+            error.message ||
+            "خطا در دریافت پزشکان",
+        });
+      });
+  };
+
+  renderIcon = (
+    path,
+    width = 20,
+    fillOnly = false
+  ) => {
     return (
       <svg
         width={width}
         height={width}
         viewBox="0 0 24 24"
-        fill={fillOnly ? "currentColor" : "none"}
-        stroke={fillOnly ? "none" : "currentColor"}
-        strokeWidth={fillOnly ? undefined : "1.8"}
-        strokeLinecap={fillOnly ? undefined : "round"}
-        strokeLinejoin={fillOnly ? undefined : "round"}
+        fill={
+          fillOnly
+            ? "currentColor"
+            : "none"
+        }
+        stroke={
+          fillOnly
+            ? "none"
+            : "currentColor"
+        }
+        strokeWidth={
+          fillOnly
+            ? undefined
+            : "1.8"
+        }
+        strokeLinecap={
+          fillOnly
+            ? undefined
+            : "round"
+        }
+        strokeLinejoin={
+          fillOnly
+            ? undefined
+            : "round"
+        }
       >
         <path d={path} />
       </svg>
@@ -367,55 +548,83 @@ class Booking extends React.Component {
       return;
     }
 
-    this.props.navigate("/client-home");
+    this.props.navigate(
+      "/client-home"
+    );
   };
 
   selectService = (service) => {
     this.setState({
       service,
+      doctors: [],
+      doctorsLoading: true,
+      doctorsError: null,
+      specialist: null,
+      time: null,
     });
+
+    this.fetchDoctors(
+      service.id
+    );
   };
 
   selectDate = (day) => {
-    const { viewJY, viewJM } = this.state;
+    const {
+      viewJY,
+      viewJM,
+    } = this.state;
 
     this.setState({
       jy: viewJY,
       jm: viewJM,
       jd: day,
+      time: null,
     });
   };
 
   changeMonth = (direction) => {
-    this.setState((prevState) => {
-      let year = prevState.viewJY;
-      let month = prevState.viewJM + direction;
+    this.setState(
+      (prevState) => {
+        let year =
+          prevState.viewJY;
 
-      if (month < 1) {
-        month = 12;
-        year--;
+        let month =
+          prevState.viewJM +
+          direction;
+
+        if (month < 1) {
+          month = 12;
+          year--;
+        }
+
+        if (month > 12) {
+          month = 1;
+          year++;
+        }
+
+        return {
+          viewJY: year,
+          viewJM: month,
+        };
       }
-
-      if (month > 12) {
-        month = 1;
-        year++;
-      }
-
-      return {
-        viewJY: year,
-        viewJM: month,
-      };
-    });
+    );
   };
 
-  selectSpecialist = (specialist) => {
+  selectSpecialist = (
+    specialist
+  ) => {
     this.setState({
       specialist,
+      time: null,
     });
   };
 
   selectTime = (time) => {
-    if (unavailTimes.includes(time)) {
+    if (
+      unavailTimes.includes(
+        time
+      )
+    ) {
       return;
     }
 
@@ -424,16 +633,26 @@ class Booking extends React.Component {
     });
   };
 
-  selectPayment = (payment) => {
+  selectPayment = (
+    payment
+  ) => {
     this.setState({
       payment,
     });
   };
 
   getDateString = () => {
-    const { jy, jm, jd } = this.state;
+    const {
+      jy,
+      jm,
+      jd,
+    } = this.state;
 
-    if (!jy || !jm || !jd) {
+    if (
+      !jy ||
+      !jm ||
+      !jd
+    ) {
       return "";
     }
 
@@ -447,13 +666,21 @@ class Booking extends React.Component {
       "شنبه",
     ];
 
-    return `${weekdays[jalaliWeekdayIdx(jy, jm, jd)]}، ${toFa(
-      jd
-    )} ${jMonthNames[jm - 1]} ${toFa(jy)}`;
+    return `${weekdays[
+      jalaliWeekdayIdx(
+        jy,
+        jm,
+        jd
+      )
+    ]}، ${toFa(jd)} ${
+      jMonthNames[jm - 1]
+    } ${toFa(jy)}`;
   };
 
   getPriceData = () => {
-    const { service } = this.state;
+    const {
+      service,
+    } = this.state;
 
     if (!service) {
       return {
@@ -463,9 +690,16 @@ class Booking extends React.Component {
       };
     }
 
-    const price = service.price;
-    const deposit = Math.round((price * 0.3) / 1000) * 1000;
-    const balance = price - deposit;
+    const price =
+      Number(service.price) || 0;
+
+    const deposit =
+      Math.round(
+        (price * 0.3) / 1000
+      ) * 1000;
+
+    const balance =
+      price - deposit;
 
     return {
       price,
@@ -486,28 +720,39 @@ class Booking extends React.Component {
       jd,
     } = this.state;
 
-    const [gy, gm, gd] = jalaliToGregorian(
+    const [
+      gy,
+      gm,
+      gd,
+    ] = jalaliToGregorian(
       viewJY,
       viewJM,
       1
     );
 
-    const firstDow = new Date(
-      gy,
-      gm - 1,
-      gd
-    ).getDay();
+    const firstDow =
+      new Date(
+        gy,
+        gm - 1,
+        gd
+      ).getDay();
 
-    const offset = (firstDow + 1) % 7;
+    const offset =
+      (firstDow + 1) % 7;
 
-    const totalDays = daysInJalaliMonth(
-      viewJY,
-      viewJM
-    );
+    const totalDays =
+      daysInJalaliMonth(
+        viewJY,
+        viewJM
+      );
 
     const days = [];
 
-    for (let i = 0; i < offset; i++) {
+    for (
+      let i = 0;
+      i < offset;
+      i++
+    ) {
       days.push(
         <div
           key={`empty-${i}`}
@@ -516,7 +761,11 @@ class Booking extends React.Component {
       );
     }
 
-    for (let day = 1; day <= totalDays; day++) {
+    for (
+      let day = 1;
+      day <= totalDays;
+      day++
+    ) {
       const isToday =
         viewJY === todayJY &&
         viewJM === todayJM &&
@@ -532,7 +781,9 @@ class Booking extends React.Component {
 
       const isUnavail =
         isPast ||
-        unavailOffsets.includes(day % 14);
+        unavailOffsets.includes(
+          day % 14
+        );
 
       const isSelected =
         jy === viewJY &&
@@ -544,13 +795,23 @@ class Booking extends React.Component {
           key={day}
           type="button"
           className={`cal-day ${
-            isUnavail ? "unavail" : ""
-          } ${isToday ? "today" : ""} ${
-            isSelected ? "selected" : ""
+            isUnavail
+              ? "unavail"
+              : ""
+          } ${
+            isToday
+              ? "today"
+              : ""
+          } ${
+            isSelected
+              ? "selected"
+              : ""
           }`}
           onClick={() => {
             if (!isUnavail) {
-              this.selectDate(day);
+              this.selectDate(
+                day
+              );
             }
           }}
         >
@@ -567,22 +828,59 @@ class Booking extends React.Component {
   };
 
   renderStep0 = () => {
-    const { service } = this.state;
+    const {
+      services,
+      servicesLoading,
+      servicesError,
+      service,
+    } = this.state;
 
     return (
       <div className="screen active">
         <p className="hint-line">
-          یک خدمت را برای شروع انتخاب کنید
+          یک خدمت را برای شروع
+          انتخاب کنید
         </p>
 
-        {services.map((service) => (
-          <ServiceItem
-            key={service.id}
-            service={service}
-            selected={this.state.service?.id === service.id}
-            onSelect={this.selectService}
-          />
-        ))}
+        {servicesLoading && (
+          <div className="time-confirm">
+            در حال دریافت خدمات...
+          </div>
+        )}
+
+        {servicesError && (
+          <div className="time-confirm">
+            {servicesError}
+          </div>
+        )}
+
+        {!servicesLoading &&
+          !servicesError &&
+          services.map(
+            (item) => (
+              <ServiceItem
+                key={item.id}
+                service={item}
+                selected={
+                  service?.id ===
+                  item.id
+                }
+                onSelect={
+                  this.selectService
+                }
+              />
+            )
+          )}
+
+        {!servicesLoading &&
+          !servicesError &&
+          services.length ===
+            0 && (
+            <div className="time-confirm">
+              خدمتی برای نمایش
+              وجود ندارد.
+            </div>
+          )}
       </div>
     );
   };
@@ -610,7 +908,9 @@ class Booking extends React.Component {
               className="cal-month-btn"
               aria-label="ماه قبل"
               onClick={() =>
-                this.changeMonth(-1)
+                this.changeMonth(
+                  -1
+                )
               }
             >
               {this.renderIcon(
@@ -620,7 +920,11 @@ class Booking extends React.Component {
             </button>
 
             <span className="cal-month-title">
-              {jMonthNames[viewJM - 1]}{" "}
+              {
+                jMonthNames[
+                  viewJM - 1
+                ]
+              }{" "}
               {toFa(viewJY)}
             </span>
 
@@ -629,7 +933,9 @@ class Booking extends React.Component {
               className="cal-month-btn"
               aria-label="ماه بعد"
               onClick={() =>
-                this.changeMonth(1)
+                this.changeMonth(
+                  1
+                )
               }
             >
               {this.renderIcon(
@@ -676,7 +982,8 @@ class Booking extends React.Component {
             </div>
 
             <div className="date-confirm-s">
-              برای انتخاب بازه زمانی، دکمه ادامه را بزنید
+              برای انتخاب بازه زمانی،
+              دکمه ادامه را بزنید
             </div>
           </div>
         )}
@@ -686,6 +993,9 @@ class Booking extends React.Component {
 
   renderStep2 = () => {
     const {
+      doctors,
+      doctorsLoading,
+      doctorsError,
       specialist,
       time,
       jy,
@@ -715,51 +1025,95 @@ class Booking extends React.Component {
           متخصصین
         </div>
 
-        {specialists.map((specialist) => (
-          <SpecialistItem
-            key={specialist.id}
-            specialist={specialist}
-            selected={
-              this.state.specialist?.id === specialist.id
-            }
-            onSelect={this.selectSpecialist}
-          />
-        ))}
+        {doctorsLoading && (
+          <div className="time-confirm">
+            در حال دریافت پزشکان...
+          </div>
+        )}
+
+        {doctorsError && (
+          <div className="time-confirm">
+            {doctorsError}
+          </div>
+        )}
+
+        {!doctorsLoading &&
+          !doctorsError &&
+          doctors.map(
+            (doctor) => (
+              <SpecialistItem
+                key={doctor.id}
+                specialist={doctor}
+                selected={
+                  specialist?.id ===
+                  doctor.id
+                }
+                onSelect={
+                  this.selectSpecialist
+                }
+              />
+            )
+          )}
+
+        {!doctorsLoading &&
+          !doctorsError &&
+          doctors.length ===
+            0 && (
+            <div className="time-confirm">
+              پزشکی برای این خدمت
+              وجود ندارد.
+            </div>
+          )}
 
         <div className="spec-label">
           بازه‌های زمانی
         </div>
 
         <div className="time-grid">
-          {timesAll.map((item) => {
-            const unavailable =
-              unavailTimes.includes(item);
+          {timesAll.map(
+            (item) => {
+              const unavailable =
+                unavailTimes.includes(
+                  item
+                );
 
-            return (
-              <button
-                type="button"
-                key={item}
-                className={`time-slot ${
-                  unavailable ? "unavail" : ""
-                } ${
-                  time === item ? "selected" : ""
-                }`}
-                onClick={() =>
-                  this.selectTime(item)
-                }
-                disabled={unavailable}
-              >
-                {item}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  type="button"
+                  key={item}
+                  className={`time-slot ${
+                    unavailable
+                      ? "unavail"
+                      : ""
+                  } ${
+                    time === item
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    this.selectTime(
+                      item
+                    )
+                  }
+                  disabled={
+                    unavailable
+                  }
+                >
+                  {item}
+                </button>
+              );
+            }
+          )}
         </div>
 
-        {specialist && time && (
-          <div className="time-confirm">
-            {time} · {specialist.name}
-          </div>
-        )}
+        {specialist &&
+          time && (
+            <div className="time-confirm">
+              {time} ·{" "}
+              {specialist.first_name}{" "}
+              {specialist.last_name}
+            </div>
+          )}
       </div>
     );
   };
@@ -771,13 +1125,21 @@ class Booking extends React.Component {
       time,
     } = this.state;
 
-    if (!service || !specialist || !time) {
+    if (
+      !service ||
+      !specialist ||
+      !time
+    ) {
       return null;
     }
 
-    const { jy, jm, jd } = this.state;
+    const dateStr =
+      this.getDateString();
 
-    const dateStr = this.getDateString();
+    const specialistName =
+      `${specialist.first_name || ""} ${
+        specialist.last_name || ""
+      }`.trim();
 
     const rows = [
       {
@@ -787,7 +1149,8 @@ class Booking extends React.Component {
       },
       {
         label: "متخصص",
-        value: specialist.name,
+        value:
+          specialistName,
         go: 2,
       },
       {
@@ -802,7 +1165,9 @@ class Booking extends React.Component {
       },
       {
         label: "مدت زمان",
-        value: service.dur,
+        value: `${toFa(
+          service.duration_minutes
+        )} دقیقه`,
         go: 0,
       },
     ];
@@ -816,36 +1181,41 @@ class Booking extends React.Component {
     return (
       <div className="screen active">
         <p className="hint-line">
-          قبل از ادامه، جزئیات نوبت خود را بررسی کنید
+          قبل از ادامه، جزئیات
+          نوبت خود را بررسی کنید
         </p>
 
         <div className="summary-card">
-          {rows.map((row) => (
-            <div
-              className="summary-row"
-              key={row.label}
-            >
-              <div className="summary-row-l">
-                <div className="summary-label">
-                  {row.label.toUpperCase()}
-                </div>
-
-                <div className="summary-value">
-                  {row.value}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="summary-change"
-                onClick={() =>
-                  this.goToStep(row.go)
-                }
+          {rows.map(
+            (row) => (
+              <div
+                className="summary-row"
+                key={row.label}
               >
-                تغییر
-              </button>
-            </div>
-          ))}
+                <div className="summary-row-l">
+                  <div className="summary-label">
+                    {row.label.toUpperCase()}
+                  </div>
+
+                  <div className="summary-value">
+                    {row.value}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="summary-change"
+                  onClick={() =>
+                    this.goToStep(
+                      row.go
+                    )
+                  }
+                >
+                  تغییر
+                </button>
+              </div>
+            )
+          )}
         </div>
 
         <div className="price-card">
@@ -881,7 +1251,8 @@ class Booking extends React.Component {
         </div>
 
         <p className="cancel-note">
-          لغو رایگان تا ۲۴ ساعت قبل از نوبت
+          لغو رایگان تا ۲۴ ساعت
+          قبل از نوبت
         </p>
       </div>
     );
@@ -931,7 +1302,10 @@ class Booking extends React.Component {
               </div>
 
               <div className="pay-today-s">
-                باقی‌مانده {toman(balance)} در کلینیک پرداخت می‌شود
+                باقی‌مانده{" "}
+                {toman(balance)}{" "}
+                در کلینیک پرداخت
+                می‌شود
               </div>
             </div>
 
@@ -952,12 +1326,17 @@ class Booking extends React.Component {
               : ""
           }`}
           onClick={() =>
-            this.selectPayment("sep")
+            this.selectPayment(
+              "sep"
+            )
           }
         >
           <span
             className="pm-logo"
-            style={{ background: "#c62828" }}
+            style={{
+              background:
+                "#c62828",
+            }}
           >
             سپ
           </span>
@@ -981,12 +1360,17 @@ class Booking extends React.Component {
               : ""
           }`}
           onClick={() =>
-            this.selectPayment("zarinpal")
+            this.selectPayment(
+              "zarinpal"
+            )
           }
         >
           <span
             className="pm-logo"
-            style={{ background: "#ffb400" }}
+            style={{
+              background:
+                "#ffb400",
+            }}
           >
             ز
           </span>
@@ -1010,12 +1394,17 @@ class Booking extends React.Component {
               : ""
           }`}
           onClick={() =>
-            this.selectPayment("zibal")
+            this.selectPayment(
+              "zibal"
+            )
           }
         >
           <span
             className="pm-logo"
-            style={{ background: "#2f6fed" }}
+            style={{
+              background:
+                "#2f6fed",
+            }}
           >
             زی
           </span>
@@ -1033,14 +1422,17 @@ class Booking extends React.Component {
         </div>
 
         <p className="secure-note">
-          پرداخت شما به‌صورت امن پردازش می‌شود.
+          پرداخت شما به‌صورت امن
+          پردازش می‌شود.
           <br />
-          اطلاعات کارت شما هرگز ذخیره نمی‌شود.
+          اطلاعات کارت شما هرگز
+          ذخیره نمی‌شود.
         </p>
 
         {success && (
           <div className="time-confirm">
-            نوبت شما با موفقیت رزرو شد ✓
+            نوبت شما با موفقیت
+            رزرو شد ✓
           </div>
         )}
       </div>
@@ -1072,7 +1464,8 @@ class Booking extends React.Component {
 
     if (step === 2) {
       return {
-        disabled: !(time && specialist),
+        disabled:
+          !(time && specialist),
         label: "ادامه",
       };
     }
@@ -1105,7 +1498,9 @@ class Booking extends React.Component {
     }
 
     if (step < 4) {
-      this.goToStep(step + 1);
+      this.goToStep(
+        step + 1
+      );
       return;
     }
 
@@ -1123,7 +1518,8 @@ class Booking extends React.Component {
   };
 
   renderCurrentStep = () => {
-    const { step } = this.state;
+    const { step } =
+      this.state;
 
     switch (step) {
       case 0:
@@ -1165,7 +1561,9 @@ class Booking extends React.Component {
               type="button"
               className="icon-btn"
               aria-label="بازگشت"
-              onClick={this.handleBack}
+              onClick={
+                this.handleBack
+              }
             >
               {this.renderIcon(
                 "m9 18 6-6-6-6",
@@ -1174,7 +1572,10 @@ class Booking extends React.Component {
             </button>
 
             <div className="page-title">
-              {stepDefs[step].title}
+              {
+                stepDefs[step]
+                  .title
+              }
             </div>
 
             <button
@@ -1196,37 +1597,53 @@ class Booking extends React.Component {
 
           <div className="stepper-wrap">
             <div className="stepper-bars">
-              {stepDefs.map((item, index) => (
-                <div
-                  key={item.label}
-                  className={`step-bar ${
-                    index < step
-                      ? "done"
-                      : ""
-                  } ${
-                    index === step
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  <div className="step-bar-fill" />
-                </div>
-              ))}
+              {stepDefs.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <div
+                    key={
+                      item.label
+                    }
+                    className={`step-bar ${
+                      index < step
+                        ? "done"
+                        : ""
+                    } ${
+                      index ===
+                      step
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <div className="step-bar-fill" />
+                  </div>
+                )
+              )}
             </div>
 
             <div className="stepper-labels">
-              {stepDefs.map((item, index) => (
-                <span
-                  key={item.label}
-                  className={`step-label ${
-                    index <= step
-                      ? "active"
-                      : ""
-                  }`}
-                >
-                  {item.label}
-                </span>
-              ))}
+              {stepDefs.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <span
+                    key={
+                      item.label
+                    }
+                    className={`step-label ${
+                      index <=
+                      step
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                )
+              )}
             </div>
           </div>
 
@@ -1241,37 +1658,48 @@ class Booking extends React.Component {
                 15
               )}
 
-              در انتخاب مطمئن نیستید؟
+              در انتخاب مطمئن
+              نیستید؟
 
               <Link to="/consultation">
-                مشاوره رایگان بگیرید
+                مشاوره رایگان
+                بگیرید
               </Link>
             </div>
 
             <button
               type="button"
               className={`continue-btn ${
-                disabled ? "disabled" : ""
+                disabled
+                  ? "disabled"
+                  : ""
               } ${
-                success ? "success" : ""
+                success
+                  ? "success"
+                  : ""
               }`}
-              onClick={this.handleContinue}
+              onClick={
+                this.handleContinue
+              }
             >
               {success
                 ? "نوبت شما با موفقیت رزرو شد ✓"
                 : label}
             </button>
 
-            {step === 4 && !success && (
-              <div className="skip-line">
-                <button
-                  type="button"
-                  onClick={this.handleSkip}
-                >
-                  ادامه بدون بیعانه
-                </button>
-              </div>
-            )}
+            {step === 4 &&
+              !success && (
+                <div className="skip-line">
+                  <button
+                    type="button"
+                    onClick={
+                      this.handleSkip
+                    }
+                  >
+                    ادامه بدون بیعانه
+                  </button>
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -1279,4 +1707,6 @@ class Booking extends React.Component {
   }
 }
 
-export default withRouter(Booking);
+export default withRouter(
+  Booking
+);

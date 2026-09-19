@@ -18,12 +18,17 @@ class SpecialistItem extends React.Component {
     );
   };
 
-  getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .slice(0, 2)
-      .join("");
+  getInitials = (specialist) => {
+    const firstName = specialist.first_name || "";
+    const lastName = specialist.last_name || "";
+
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  };
+
+  getFullName = (specialist) => {
+    return `${specialist.first_name || ""} ${
+      specialist.last_name || ""
+    }`.trim();
   };
 
   render() {
@@ -33,6 +38,8 @@ class SpecialistItem extends React.Component {
       onSelect,
     } = this.props;
 
+    const name = this.getFullName(specialist);
+
     return (
       <div
         className={`spec-pick ${
@@ -41,22 +48,30 @@ class SpecialistItem extends React.Component {
         onClick={() => onSelect(specialist)}
       >
         <span className="spec-pick-av">
-          {this.getInitials(specialist.name)}
+          {specialist.avatar ? (
+            <img
+              src={specialist.avatar}
+              alt={name}
+            />
+          ) : (
+            this.getInitials(specialist)
+          )}
         </span>
 
         <div className="spec-pick-info">
           <div className="spec-pick-name">
-            {specialist.name}
+            {name}
 
-            {specialist.verified &&
-              this.renderIcon(
+            <span className="doctor-verified">
+              {this.renderIcon(
                 "M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
                 13
               )}
+            </span>
           </div>
 
           <div className="spec-pick-role">
-            {specialist.role}
+            {specialist.ability || "پزشک متخصص"}
           </div>
 
           <div className="spec-pick-rate">
@@ -66,13 +81,39 @@ class SpecialistItem extends React.Component {
               true
             )}
 
-            {specialist.rating} ·{" "}
-            {specialist.years}
+            {specialist.rating
+              ? toFa(specialist.rating)
+              : "جدید"}
+
+            {" · "}
+
+            {specialist.experience
+              ? `${toFa(specialist.experience)} سال سابقه`
+              : "سابقه ثبت نشده"}
           </div>
         </div>
       </div>
     );
   }
 }
+
+const faDigits = [
+  "۰",
+  "۱",
+  "۲",
+  "۳",
+  "۴",
+  "۵",
+  "۶",
+  "۷",
+  "۸",
+  "۹",
+];
+
+const toFa = (value) =>
+  String(value).replace(
+    /\d/g,
+    (digit) => faDigits[digit]
+  );
 
 export default SpecialistItem;
