@@ -1,14 +1,7 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 class ServiceItem extends React.Component {
-  handleClick = () => {
-    const { service, onClick } = this.props;
-
-    if (onClick) {
-      onClick(service);
-    }
-  };
-
   render() {
     const {
       service,
@@ -17,6 +10,7 @@ class ServiceItem extends React.Component {
     } = this.props;
 
     const {
+      id,
       name,
       short_description,
       duration_minutes,
@@ -40,10 +34,9 @@ class ServiceItem extends React.Component {
       Number(reviews || 0).toLocaleString("fa-IR");
 
     return (
-      <button
+      <Link
+        to={`/service-detail/${id}`}
         className="svc-item"
-        type="button"
-        onClick={this.handleClick}
       >
         <div
           className="svc-thumb"
@@ -55,7 +48,6 @@ class ServiceItem extends React.Component {
         </div>
 
         <div className="svc-info">
-
           <div className="svc-item-name">
             {name}
           </div>
@@ -65,7 +57,6 @@ class ServiceItem extends React.Component {
           </div>
 
           <div className="svc-meta">
-
             {/* Duration */}
             <span className="svc-dur">
               <svg
@@ -87,9 +78,9 @@ class ServiceItem extends React.Component {
                 <path d="M12 6v6l4 2" />
               </svg>
 
-              {Number(duration_minutes || 0).toLocaleString(
-                "fa-IR"
-              )}{" "}
+              {Number(
+                duration_minutes || 0
+              ).toLocaleString("fa-IR")}{" "}
               دقیقه
             </span>
 
@@ -100,7 +91,6 @@ class ServiceItem extends React.Component {
 
             {/* Rating */}
             <span className="svc-rate">
-
               <svg
                 width="12"
                 height="12"
@@ -115,15 +105,12 @@ class ServiceItem extends React.Component {
               <span className="svc-rc">
                 ({formattedReviews})
               </span>
-
             </span>
-
           </div>
         </div>
 
         {/* Arrow */}
         <span className="svc-chev">
-
           <svg
             width="17"
             height="17"
@@ -135,10 +122,8 @@ class ServiceItem extends React.Component {
           >
             <path d="m15 6-6 6 6 6" />
           </svg>
-
         </span>
-
-      </button>
+      </Link>
     );
   }
 }

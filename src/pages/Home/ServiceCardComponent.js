@@ -10,7 +10,6 @@ class ServiceCard extends React.Component {
 
     const {
       name,
-      short_description,
     } = service;
 
     return (
@@ -30,7 +29,7 @@ class ServiceCard extends React.Component {
         </div>
 
         <div className="svc-cat">
-          {short_description} ‹
+          {service.category.name} ‹
         </div>
 
       </div>

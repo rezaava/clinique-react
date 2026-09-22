@@ -1,12 +1,11 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./../../css/service-detail.css";
 
 import SpecialistsSection from "./SpecialistsSectionComponent";
 import ReviewsSection from "./ClientReviewsComponent";
 import FaqSection from "./FAQComponent";
 import RelatedServicesSection from "./RelatedServicesComponent";
-
 
 class ServiceDetail extends React.Component {
   constructor(props) {
@@ -244,7 +243,7 @@ class ServiceDetail extends React.Component {
         </header>
 
         {/* Scroll Area */}
-        <div className="scroll-area">
+        <div className="scroll-area service-detail-scroll">
 
           {/* Hero */}
           <div className="detail-hero">
@@ -364,13 +363,19 @@ class ServiceDetail extends React.Component {
 
             {/* CTA */}
             <div className="cta-row">
-              <button className="btn-outline">
+              <Link
+                to="/consultation"
+                className="btn-outline"
+              >
                 دریافت مشاوره
-              </button>
+              </Link>
 
-              <button className="btn-solid">
+              <Link
+                to="/booking"
+                className="btn-solid"
+              >
                 رزرو نوبت
-              </button>
+              </Link>
             </div>
 
             {/* Info Grid */}
@@ -427,7 +432,6 @@ class ServiceDetail extends React.Component {
                   </div>
 
                   <div className="info-v">
-                    {/* این قسمت باید به API تعداد جلسات وصل شود */}
                     ۱ تا ۳ جلسه
                   </div>
                 </div>
@@ -456,7 +460,6 @@ class ServiceDetail extends React.Component {
                   </div>
 
                   <div className="info-v">
-                    {/* این قسمت باید به API وصل شود */}
                     کم، ۲۴-۴۸ ساعت
                   </div>
                 </div>
@@ -486,7 +489,6 @@ class ServiceDetail extends React.Component {
                   </div>
 
                   <div className="info-v">
-                    {/* این قسمت باید به API وصل شود */}
                     اکثر انواع پوست
                   </div>
                 </div>
@@ -804,13 +806,11 @@ class ServiceDetail extends React.Component {
             </div>
 
             {/* Specialists */}
-
             <SpecialistsSection
               specialists={service.staff || []}
             />
 
             {/* Reviews */}
-
             <ReviewsSection
               rating={service.rating}
               reviewCount={service.reviews}
@@ -818,15 +818,13 @@ class ServiceDetail extends React.Component {
             />
 
             {/* FAQ */}
-
             <FaqSection
               faqs={service.faqs || []}
               openFaq={openFaq}
-                handleFaq={this.handleFaq}
+              handleFaq={this.handleFaq}
             />
 
             {/* Related Services */}
-
             <RelatedServicesSection
               services={service.related_services}
             />
@@ -860,13 +858,19 @@ class ServiceDetail extends React.Component {
 
               <div className="notsure-btns">
 
-                <button className="btn-solid">
+                <Link
+                  to="/consultation"
+                  className="btn-solid"
+                >
                   دریافت مشاوره
-                </button>
+                </Link>
 
-                <button className="btn-outline">
+                <Link
+                  to="/booking"
+                  className="btn-outline"
+                >
                   رزرو نوبت
-                </button>
+                </Link>
 
               </div>
             </div>
@@ -877,31 +881,25 @@ class ServiceDetail extends React.Component {
         {/* Sticky CTA */}
         <div className="sticky-cta">
 
-          <button className="btn-outline">
+          <Link
+            to="/consultation"
+            className="btn-outline"
+          >
             دریافت مشاوره
-          </button>
+          </Link>
 
-          <button className="btn-solid">
+          <Link
+            to="/booking"
+            className="btn-solid"
+          >
             رزرو نوبت
-          </button>
+          </Link>
 
         </div>
       </>
     );
   }
 }
-
-
-/*
-|--------------------------------------------------------------------------
-| Wrapper
-|--------------------------------------------------------------------------
-|
-| چون ServiceDetail یک Class Component است،
-| useParams و useNavigate را مستقیماً نمی‌توانیم داخل آن استفاده کنیم.
-| این Wrapper اطلاعات route را به props کامپوننت اصلی می‌دهد.
-|
-*/
 
 function ServiceDetailWithRouter(props) {
   const params = useParams();

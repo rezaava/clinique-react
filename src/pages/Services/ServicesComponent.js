@@ -9,6 +9,7 @@ class Services extends React.Component {
     this.state = {
       activePill: "all",
       services: [],
+      categories: [],
       loading: true,
       error: null,
     };
@@ -18,9 +19,7 @@ class Services extends React.Component {
     const html = document.documentElement;
 
     if (
-      window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches
+      window.matchMedia("(prefers-color-scheme: dark)").matches
     ) {
       html.setAttribute("data-theme", "dark");
     }
@@ -56,9 +55,9 @@ class Services extends React.Component {
 
       this.setState({
         services: result.data || [],
+        categories: result.category || [],
         loading: false,
       });
-
     } catch (error) {
       console.error(
         "Services API Error:",
@@ -91,7 +90,7 @@ class Services extends React.Component {
     );
 
     /*
-     * بعداً می‌توانیم اینجا صفحه جزئیات
+     * بعداً می‌توانیم صفحه جزئیات
      * خدمت را باز کنیم.
      *
      * مثال:
@@ -116,7 +115,6 @@ class Services extends React.Component {
 
   getServiceIcon = (index) => {
     const icons = [
-
       // Botox
       <svg
         key="icon-1"
@@ -190,20 +188,15 @@ class Services extends React.Component {
       activePill,
     } = this.state;
 
-    /*
-     * فعلاً چون Service مدل شما category
-     * ندارد، همه خدمات را برمی‌گردانیم.
-     *
-     * وقتی category به Service اضافه شود،
-     * فیلترهای skin / hair / inj / laser
-     * را اینجا فعال می‌کنیم.
-     */
-
     if (activePill === "all") {
       return services;
     }
 
-    return services;
+    return services.filter(
+      (service) =>
+        String(service.cat_id) ===
+        String(activePill)
+    );
   };
 
   render() {
@@ -212,6 +205,7 @@ class Services extends React.Component {
       loading,
       error,
       services,
+      categories,
     } = this.state;
 
     const filteredServices =
@@ -222,7 +216,6 @@ class Services extends React.Component {
         {/* Header */}
 
         <header className="page-header">
-
           <button
             className="icon-btn"
             aria-label="بازگشت"
@@ -247,7 +240,6 @@ class Services extends React.Component {
           </h1>
 
           <div className="head-actions">
-
             <button
               className="icon-btn"
               aria-label="جستجو"
@@ -267,7 +259,6 @@ class Services extends React.Component {
                   cy="11"
                   r="8"
                 />
-
                 <path d="m21 21-4.3-4.3" />
               </svg>
             </button>
@@ -291,18 +282,17 @@ class Services extends React.Component {
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
             </button>
-
           </div>
         </header>
 
         <div className="scroll-area">
-
           {/* Pills */}
 
           <div
             className="pill-scroll"
             id="pillScroll"
           >
+            {/* همه */}
 
             <button
               className={`pill ${
@@ -317,66 +307,32 @@ class Services extends React.Component {
               همه
             </button>
 
-            <button
-              className={`pill ${
-                activePill === "skin"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                this.handlePillClick("skin")
-              }
-            >
-              پوست
-            </button>
+            {/* Categories from API */}
 
-            <button
-              className={`pill ${
-                activePill === "hair"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                this.handlePillClick("hair")
-              }
-            >
-              مو
-            </button>
-
-            <button
-              className={`pill ${
-                activePill === "inj"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                this.handlePillClick("inj")
-              }
-            >
-              تزریقات
-            </button>
-
-            <button
-              className={`pill ${
-                activePill === "laser"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                this.handlePillClick("laser")
-              }
-            >
-              لیزر
-            </button>
-
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                className={`pill ${
+                  String(activePill) ===
+                  String(category.id)
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  this.handlePillClick(
+                    category.id
+                  )
+                }
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
 
           {/* Recommended */}
 
           <div className="sec">
-
             <div className="reco-eyebrow">
-
               <svg
                 width="14"
                 height="14"
@@ -387,15 +343,12 @@ class Services extends React.Component {
               </svg>
 
               پیشنهاد شده برای شما
-
             </div>
 
             <div className="reco-grid">
-
               {services
                 .slice(0, 2)
                 .map((service, index) => (
-
                   <div
                     className="reco-card"
                     key={service.id}
@@ -405,7 +358,6 @@ class Services extends React.Component {
                       )
                     }
                   >
-
                     <div
                       className="reco-img"
                       style={{
@@ -421,7 +373,6 @@ class Services extends React.Component {
                     </div>
 
                     <div className="reco-body">
-
                       <div className="reco-t">
                         {service.name}
                       </div>
@@ -435,29 +386,21 @@ class Services extends React.Component {
                         )}{" "}
                         تومان
                       </div>
-
                     </div>
-
                   </div>
-
                 ))}
-
             </div>
-
           </div>
 
           {/* Available Services */}
 
           <div className="sec">
-
             <div className="avail-label">
-
               {loading
                 ? "در حال دریافت خدمات..."
                 : `${filteredServices.length.toLocaleString(
                     "fa-IR"
                   )} خدمت موجود`}
-
             </div>
 
             {/* Loading */}
@@ -472,20 +415,14 @@ class Services extends React.Component {
 
             {!loading && error && (
               <div className="services-error">
-
-                <div>
-                  {error}
-                </div>
+                <div>{error}</div>
 
                 <button
                   type="button"
-                  onClick={
-                    this.fetchServices
-                  }
+                  onClick={this.fetchServices}
                 >
                   تلاش مجدد
                 </button>
-
               </div>
             )}
 
@@ -504,12 +441,9 @@ class Services extends React.Component {
             {!loading &&
               !error &&
               filteredServices.length > 0 && (
-
                 <div className="svc-list">
-
                   {filteredServices.map(
                     (service, index) => (
-
                       <ServiceItem
                         key={service.id}
                         service={service}
@@ -523,20 +457,15 @@ class Services extends React.Component {
                           this.handleServiceClick
                         }
                       />
-
                     )
                   )}
-
                 </div>
-
               )}
-
           </div>
 
           {/* Consultation */}
 
           <div className="consult-card">
-
             <div className="consult-t">
               مطمئن نیستید کدام خدمت مناسب شماست؟
             </div>
@@ -552,9 +481,7 @@ class Services extends React.Component {
             >
               دریافت مشاوره
             </button>
-
           </div>
-
         </div>
       </>
     );
