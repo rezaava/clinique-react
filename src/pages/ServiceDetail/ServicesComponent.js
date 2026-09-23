@@ -115,6 +115,46 @@ class ServiceDetail extends React.Component {
     );
   };
 
+  renderSuitabilityIcon = (level) => {
+    if (Number(level) === 3) {
+      return (
+        <span className="suit-ic warn">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+        </span>
+      );
+    }
+
+    return (
+      <span className="suit-ic good">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      </span>
+    );
+  };
+
   render() {
     const {
       service,
@@ -197,7 +237,6 @@ class ServiceDetail extends React.Component {
           </h1>
 
           <div className="head-actions">
-            {/* Like */}
             <button
               className={`icon-btn ${liked ? "liked" : ""}`}
               id="likeBtn"
@@ -218,7 +257,6 @@ class ServiceDetail extends React.Component {
               </svg>
             </button>
 
-            {/* Share */}
             <button
               className="icon-btn"
               aria-label="اشتراک‌گذاری"
@@ -540,78 +578,20 @@ class ServiceDetail extends React.Component {
             </h3>
 
             <div className="suit-list">
-
-              {[
-                "پوست کدر، کم‌آب یا دارای منافذ مسدود",
-                "رنگ پوست ناهماهنگ یا لکه‌های خفیف",
-                "خطوط ریز و کاهش شادابی پوست",
-              ].map((text, index) => (
-                <div
-                  className="suit-item"
-                  key={index}
-                >
-                  <span className="suit-ic good">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                  </span>
-
-                  {text}
-                </div>
-              ))}
-
-              <div className="suit-item">
-                <span className="suit-ic warn">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              {(service.suitabilities || [])
+                .sort((a, b) => Number(a.level) - Number(b.level))
+                .map((item) => (
+                  <div
+                    className="suit-item"
+                    key={item.id}
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v4M12 16h.01" />
-                  </svg>
-                </span>
+                    {this.renderSuitabilityIcon(item.level)}
 
-                پوست حساس یا آکنه فعال — ابتدا با متخصص
-                مشورت کنید
-              </div>
-
-              <div className="suit-item">
-                <span className="suit-ic warn">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v4M12 16h.01" />
-                  </svg>
-                </span>
-
-                در دوران بارداری — قبل از رزرو با متخصص
-                خود صحبت کنید
-              </div>
-
+                    <span>
+                      {item.text}
+                    </span>
+                  </div>
+                ))}
             </div>
 
             <p className="suit-note">
