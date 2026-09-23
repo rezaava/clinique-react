@@ -50,5 +50,5 @@
 .consult-card::before { content:''; position:absolute; inset-inline-start:-30%; top:-40%; width:70%; height:140%; background:radial-gradient(circle,rgba(193,122,78,.35),transparent 65%); pointer-events:none; }
 .consult-t { position:relative; font-weight:800; font-size:1.05rem; color:#fff; line-height:1.45; }
 .consult-s { position:relative; font-size:.84rem; color:rgba(255,255,255,.68); margin-top:7px; margin-bottom:18px; line-height:1.55; }
-.consult-btn { position:relative; width:100%; background:#fff; color:#1a1015; font-weight:700; font-size:.92rem; padding:14px; border-radius:26px; transition:filter .18s ease; }
+.consult-btn { position:relative; width:100%; text-align: center; display: block; background:#fff; color:#1a1015; font-weight:700; font-size:.92rem; padding:14px; border-radius:26px; transition:filter .18s ease; }
 .consult-btn:hover { filter:brightness(.94); }

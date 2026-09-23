@@ -549,7 +549,7 @@ class Booking extends React.Component {
     }
 
     this.props.navigate(
-      "/client-home"
+      "/"
     );
   };
 
@@ -1584,7 +1584,7 @@ class Booking extends React.Component {
               aria-label="بستن"
               onClick={() =>
                 this.props.navigate(
-                  "/client-home"
+                  "/"
                 )
               }
             >

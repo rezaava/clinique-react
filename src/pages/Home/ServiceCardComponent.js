@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 class ServiceCard extends React.Component {
   render() {
@@ -9,12 +10,20 @@ class ServiceCard extends React.Component {
     } = this.props;
 
     const {
+      id,
       name,
+      category,
     } = service;
 
     return (
-      <div className="svc-card">
-
+      <Link
+        to={`/service-detail/${id}`}
+        className="svc-card"
+        style={{
+          textDecoration: "none",
+          color: "inherit",
+        }}
+      >
         <div
           className="svc-img"
           style={{
@@ -29,10 +38,9 @@ class ServiceCard extends React.Component {
         </div>
 
         <div className="svc-cat">
-          {service.category.name} ‹
+          {category?.name} ‹
         </div>
-
-      </div>
+      </Link>
     );
   }
 }

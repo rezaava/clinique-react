@@ -142,6 +142,13 @@ class Consultation extends React.Component {
     this.fetchServices();
     this.fetchSpecialists();
   }
+  componentWillUnmount() {
+    const navOuter = document.querySelector(".bottom-nav");
+
+    if (navOuter) {
+      navOuter.style.display = "";
+    }
+  }
 
   fetchServices = () => {
     fetch(

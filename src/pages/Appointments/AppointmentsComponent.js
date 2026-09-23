@@ -478,8 +478,8 @@ class Appointments extends React.Component {
             </div>
           )}
 
-          <a
-            href="client-consultation-flow.html"
+          <Link
+            to="/booking"
             className="fab-book"
           >
             <svg
@@ -495,7 +495,7 @@ class Appointments extends React.Component {
             </svg>
 
             رزرو جدید
-          </a>
+          </Link>
         </div>
       </>
     );

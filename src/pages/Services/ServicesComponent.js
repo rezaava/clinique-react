@@ -1,6 +1,7 @@
 import React from "react";
 import "./../../css/services.css";
 import ServiceItem from "./ServiceItemComponent";
+import { Link } from "react-router-dom";
 
 class Services extends React.Component {
   constructor(props) {
@@ -475,12 +476,12 @@ class Services extends React.Component {
               ما مشورت کنید.
             </div>
 
-            <button
+            <Link
+              to="/consultation"
               className="consult-btn"
-              type="button"
             >
               دریافت مشاوره
-            </button>
+            </Link>
           </div>
         </div>
       </>
