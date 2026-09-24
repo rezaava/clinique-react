@@ -607,54 +607,33 @@ class ServiceDetail extends React.Component {
             </h3>
 
             <div className="hiw-row">
+              {(service.treatmentSteps || [])
+                .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
+                .map((item) => (
+                  <div
+                    className="hiw-item"
+                    key={item.id}
+                  >
+                    <span className="hiw-ic">
+                      <svg
+                        width="21"
+                        height="21"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d={item.svg} />
+                      </svg>
+                    </span>
 
-              {[
-                {
-                  title: "مشاوره",
-                  icon:
-                    "M12 2v4M6 6h12M6 10h12M6 14h8",
-                },
-                {
-                  title: "آماده‌سازی",
-                  icon:
-                    "M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z",
-                },
-                {
-                  title: "درمان",
-                  icon:
-                    "M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z",
-                },
-                {
-                  title: "مراقبت پس از درمان",
-                  icon:
-                    "M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2",
-                },
-              ].map((item, index) => (
-                <div
-                  className="hiw-item"
-                  key={index}
-                >
-                  <span className="hiw-ic">
-                    <svg
-                      width="21"
-                      height="21"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d={item.icon} />
-                    </svg>
-                  </span>
-
-                  <span className="hiw-label">
-                    {item.title}
-                  </span>
-                </div>
-              ))}
-
+                    <span className="hiw-label">
+                      {item.name}
+                    </span>
+                  </div>
+                ))}
             </div>
 
             {/* Expectations */}
