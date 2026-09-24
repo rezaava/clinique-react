@@ -189,26 +189,6 @@ class ServiceDetail extends React.Component {
       );
     }
 
-    const tabs = {
-      before: [
-        "قبل از درمان پوست خود را با شوینده ملایم تمیز کنید.",
-        "حداقل ۲۴ ساعت قبل از درمان از لایه‌بردارهای قوی استفاده نکنید.",
-        "در صورت داشتن حساسیت پوستی، قبل از درمان با متخصص مشورت کنید.",
-      ],
-
-      during: [
-        "در ابتدا پوست پاکسازی و برای درمان آماده می‌شود.",
-        "ناخالصی‌ها و آلودگی‌های سطح پوست با دستگاه مخصوص استخراج می‌شوند.",
-        "در مرحله پایانی سرم‌های متناسب با نوع پوست استفاده می‌شوند.",
-      ],
-
-      after: [
-        "ممکن است قرمزی خفیف و موقتی داشته باشید.",
-        "تا ۲۴ ساعت از سونا و ورزش سنگین خودداری کنید.",
-        "برای محافظت از پوست از ضدآفتاب مناسب استفاده کنید.",
-      ],
-    };
-
     return (
       <>
         {/* Header */}
@@ -640,79 +620,77 @@ class ServiceDetail extends React.Component {
             <div className="detail-divider"></div>
 
             <h3 className="detail-h2">
-              چه انتظاری باید داشته باشید؟
+                چه انتظاری باید داشته باشید؟
             </h3>
 
             <div className="wte-tabs">
 
-              <button
-                className={`wte-tab ${
-                  activeTab === "before"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  this.handleTabChange("before")
-                }
-              >
-                قبل از درمان
-              </button>
+                <button
+                    className={`wte-tab ${
+                        activeTab === "before" ? "active" : ""
+                    }`}
+                    onClick={() => this.handleTabChange("before")}
+                >
+                    قبل از درمان
+                </button>
 
-              <button
-                className={`wte-tab ${
-                  activeTab === "during"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  this.handleTabChange("during")
-                }
-              >
-                حین درمان
-              </button>
+                <button
+                    className={`wte-tab ${
+                        activeTab === "during" ? "active" : ""
+                    }`}
+                    onClick={() => this.handleTabChange("during")}
+                >
+                    حین درمان
+                </button>
 
-              <button
-                className={`wte-tab ${
-                  activeTab === "after"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  this.handleTabChange("after")
-                }
-              >
-                بعد از درمان
-              </button>
+                <button
+                    className={`wte-tab ${
+                        activeTab === "after" ? "active" : ""
+                    }`}
+                    onClick={() => this.handleTabChange("after")}
+                >
+                    بعد از درمان
+                </button>
 
             </div>
 
             <div className="wte-list">
-              {tabs[activeTab].map((item, index) => (
-                <div
-                  className="suit-item"
-                  key={index}
-                >
-                  <span className="suit-ic good">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                  </span>
+                {(service.expectations || [])
+                    .filter((item) => item.status === activeTab)
+                    .sort(
+                        (a, b) =>
+                            Number(a.sort_order) -
+                            Number(b.sort_order)
+                    )
+                    .map((item) => (
+                        <div
+                            className="suit-item"
+                            key={item.id}
+                        >
+                            <span className="suit-ic good">
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                    />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                            </span>
 
-                  {item}
-                </div>
-              ))}
+                            <span>{item.text}</span>
+                        </div>
+                    ))}
             </div>
-
             {/* After care */}
             <div className="detail-divider"></div>
 
