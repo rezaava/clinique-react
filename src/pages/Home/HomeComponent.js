@@ -346,7 +346,9 @@ class Home extends React.Component {
                     </div>
 
                     <div className="spec-next-v">
-                      فردا، ساعت ۱۴:۰۰
+                      {doctor.available?.available
+                        ? `${doctor.available.date}، ساعت ${doctor.available.time}`
+                        : "نوبت خالی وجود ندارد"}
                     </div>
 
                   </div>
