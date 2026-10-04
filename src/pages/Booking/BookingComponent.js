@@ -67,33 +67,6 @@ const stepDefs = [
   },
 ];
 
-const timesAll = [
-  "۰۹:۰۰",
-  "۱۰:۰۰",
-  "۱۰:۳۰",
-  "۱۱:۰۰",
-  "۱۲:۰۰",
-  "۱۳:۰۰",
-  "۱۴:۰۰",
-  "۱۵:۰۰",
-  "۱۵:۳۰",
-  "۱۶:۰۰",
-  "۱۶:۳۰",
-  "۱۷:۰۰",
-];
-
-const unavailTimes = [
-  "۰۹:۰۰",
-  "۱۰:۳۰",
-  "۱۲:۰۰",
-  "۱۳:۰۰",
-  "۱۵:۰۰",
-  "۱۶:۰۰",
-  "۱۷:۰۰",
-];
-
-const unavailOffsets = [2, 6, 13];
-
 function gregorianToJalali(gy, gm, gd) {
   const g_d_m = [
     0,
@@ -143,9 +116,9 @@ function gregorianToJalali(gy, gm, gd) {
     days < 186
       ? 1 + Math.floor(days / 31)
       : 7 +
-        Math.floor(
-          (days - 186) / 30
-        );
+      Math.floor(
+        (days - 186) / 30
+      );
 
   const jd =
     1 +
@@ -213,7 +186,7 @@ function jalaliToGregorian(jy, jm, jd) {
     31,
     (gy % 4 === 0 &&
       gy % 100 !== 0) ||
-    gy % 400 === 0
+      gy % 400 === 0
       ? 29
       : 28,
     31,
@@ -232,7 +205,11 @@ function jalaliToGregorian(jy, jm, jd) {
 
   let gd = days + 1;
 
-  for (gm = 0; gm < 13; gm++) {
+  for (
+    gm = 0;
+    gm < 13;
+    gm++
+  ) {
     const value = sal_a[gm];
 
     if (gd <= value) {
@@ -250,12 +227,15 @@ function jalaliWeekdayIdx(
   jm,
   jd
 ) {
-  const [gy, gm, gd] =
-    jalaliToGregorian(
-      jy,
-      jm,
-      jd
-    );
+  const [
+    gy,
+    gm,
+    gd,
+  ] = jalaliToGregorian(
+    jy,
+    jm,
+    jd
+  );
 
   return new Date(
     gy,
@@ -318,6 +298,10 @@ class Booking extends React.Component {
       doctorsLoading: false,
       doctorsError: null,
 
+      timeSlots: [],
+      timeSlotsLoading: false,
+      timeSlotsError: null,
+
       service: null,
 
       jy: null,
@@ -335,6 +319,11 @@ class Booking extends React.Component {
 
       viewJY: todayJY,
       viewJM: todayJM,
+
+      workdays: [],
+      workdaysLoading: false,
+      workdaysError: null,
+      workdaysLoaded: false,
 
       success: false,
     };
@@ -364,6 +353,27 @@ class Booking extends React.Component {
     }
 
     this.fetchServices();
+  }
+
+  componentDidUpdate(
+    prevProps,
+    prevState
+  ) {
+    if (
+      prevState.step !== 1 &&
+      this.state.step === 1 &&
+      !this.state.workdaysLoaded &&
+      !this.state.workdaysLoading
+    ) {
+      this.fetchWorkdays();
+    }
+
+    if (
+      prevState.step !== 2 &&
+      this.state.step === 2
+    ) {
+      this.fetchFreeTimes();
+    }
   }
 
   componentWillUnmount() {
@@ -400,7 +410,7 @@ class Booking extends React.Component {
         if (!result.success) {
           throw new Error(
             result.message ||
-              "لیست خدمات دریافت نشد."
+            "لیست خدمات دریافت نشد."
           );
         }
 
@@ -428,32 +438,19 @@ class Booking extends React.Component {
       });
   };
 
-  fetchDoctors = (serviceId) => {
-    if (!serviceId) {
-      this.setState({
-        doctors: [],
-        doctorsLoading: false,
-        doctorsError: null,
-      });
-
-      return;
-    }
-
+  fetchWorkdays = () => {
     this.setState({
-      doctorsLoading: true,
-      doctorsError: null,
-      doctors: [],
-      specialist: null,
-      time: null,
+      workdaysLoading: true,
+      workdaysError: null,
     });
 
     fetch(
-      `http://127.0.0.1:8000/api/doctors/${serviceId}`
+      "http://127.0.0.1:8000/api/workdays"
     )
       .then((response) => {
         if (!response.ok) {
           throw new Error(
-            "خطا در دریافت لیست پزشکان"
+            "خطا در دریافت روزهای کاری"
           );
         }
 
@@ -463,21 +460,127 @@ class Booking extends React.Component {
         if (!result.success) {
           throw new Error(
             result.message ||
-              "لیست پزشکان دریافت نشد."
+            "روزهای کاری دریافت نشد."
           );
         }
 
-        const doctors =
+        const workdays =
           Array.isArray(
-            result.data?.user
+            result.data
           )
-            ? result.data.user
+            ? result.data
             : [];
 
         this.setState({
-          doctors,
+          workdays,
+          workdaysLoading: false,
+          workdaysError: null,
+          workdaysLoaded: true,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          workdays: [],
+          workdaysLoading: false,
+          workdaysError:
+            error.message ||
+            "خطا در دریافت روزهای کاری",
+          workdaysLoaded: false,
+        });
+      });
+  };
+
+  fetchFreeTimes = () => {
+    const {
+      service,
+      jy,
+      jm,
+      jd,
+    } = this.state;
+
+    if (
+      !service ||
+      !jy ||
+      !jm ||
+      !jd
+    ) {
+      return;
+    }
+
+    const [
+      gy,
+      gm,
+      gd,
+    ] = jalaliToGregorian(
+      jy,
+      jm,
+      jd
+    );
+
+    const date =
+      `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
+
+    this.setState({
+      doctorsLoading: true,
+      doctorsError: null,
+      timeSlotsLoading: true,
+      timeSlotsError: null,
+      doctors: [],
+      timeSlots: [],
+      specialist: null,
+      time: null,
+    });
+
+    fetch(
+      `http://127.0.0.1:8000/api/freetimes/${date}/${service.id}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          return response.json()
+            .catch(() => null)
+            .then((result) => {
+              throw new Error(
+                result?.message ||
+                "خطا در دریافت زمان‌های آزاد"
+              );
+            });
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message ||
+            "زمان‌های آزاد دریافت نشد."
+          );
+        }
+
+        const data =
+          result.data || {};
+
+        this.setState({
+          doctors:
+            Array.isArray(
+              data.doctors
+            )
+              ? data.doctors
+              : [],
+
+          timeSlots:
+            Array.isArray(
+              data.time_slots
+            )
+              ? data.time_slots
+              : [],
+
           doctorsLoading: false,
           doctorsError: null,
+
+          timeSlotsLoading: false,
+          timeSlotsError: null,
         });
       })
       .catch((error) => {
@@ -485,10 +588,20 @@ class Booking extends React.Component {
 
         this.setState({
           doctors: [],
+          timeSlots: [],
+
           doctorsLoading: false,
           doctorsError:
             error.message ||
             "خطا در دریافت پزشکان",
+
+          timeSlotsLoading: false,
+          timeSlotsError:
+            error.message ||
+            "خطا در دریافت زمان‌های آزاد",
+
+          specialist: null,
+          time: null,
         });
       });
   };
@@ -541,10 +654,14 @@ class Booking extends React.Component {
   };
 
   handleBack = () => {
-    const { step } = this.state;
+    const { step } =
+      this.state;
 
     if (step > 0) {
-      this.goToStep(step - 1);
+      this.goToStep(
+        step - 1
+      );
+
       return;
     }
 
@@ -556,16 +673,18 @@ class Booking extends React.Component {
   selectService = (service) => {
     this.setState({
       service,
+
       doctors: [],
-      doctorsLoading: true,
+      doctorsLoading: false,
       doctorsError: null,
+
+      timeSlots: [],
+      timeSlotsLoading: false,
+      timeSlotsError: null,
+
       specialist: null,
       time: null,
     });
-
-    this.fetchDoctors(
-      service.id
-    );
   };
 
   selectDate = (day) => {
@@ -578,6 +697,14 @@ class Booking extends React.Component {
       jy: viewJY,
       jm: viewJM,
       jd: day,
+
+      doctors: [],
+      timeSlots: [],
+
+      doctorsError: null,
+      timeSlotsError: null,
+
+      specialist: null,
       time: null,
     });
   };
@@ -611,25 +738,47 @@ class Booking extends React.Component {
   };
 
   selectSpecialist = (
-    specialist
+    doctorData
   ) => {
+    const specialist = {
+      ...doctorData.doctor,
+      slots:
+        doctorData.slots || [],
+      service:
+        doctorData.service || null,
+    };
+
     this.setState({
       specialist,
       time: null,
     });
   };
 
-  selectTime = (time) => {
+  selectTime = (slot) => {
+    const {
+      specialist,
+    } = this.state;
+
+    if (!specialist) {
+      return;
+    }
+
+    const doctorSlot =
+      specialist.slots?.find(
+        (item) =>
+          Number(item.id) ===
+          Number(slot.id)
+      );
+
     if (
-      unavailTimes.includes(
-        time
-      )
+      !doctorSlot ||
+      !doctorSlot.available
     ) {
       return;
     }
 
     this.setState({
-      time,
+      time: doctorSlot,
     });
   };
 
@@ -672,14 +821,14 @@ class Booking extends React.Component {
         jm,
         jd
       )
-    ]}، ${toFa(jd)} ${
-      jMonthNames[jm - 1]
-    } ${toFa(jy)}`;
+    ]}، ${toFa(jd)} ${jMonthNames[jm - 1]
+      } ${toFa(jy)}`;
   };
 
   getPriceData = () => {
     const {
       service,
+      specialist,
     } = this.state;
 
     if (!service) {
@@ -691,7 +840,10 @@ class Booking extends React.Component {
     }
 
     const price =
-      Number(service.price) || 0;
+      Number(
+        specialist?.service?.price ??
+        service.price
+      ) || 0;
 
     const deposit =
       Math.round(
@@ -708,6 +860,70 @@ class Booking extends React.Component {
     };
   };
 
+  getProjectDay = (
+    jy,
+    jm,
+    jd
+  ) => {
+    const weekday =
+      jalaliWeekdayIdx(
+        jy,
+        jm,
+        jd
+      );
+
+    const mapping = {
+      0: 1,
+      1: 2,
+      2: 3,
+      3: 4,
+      4: 5,
+      5: null,
+      6: 0,
+    };
+
+    return mapping[weekday];
+  };
+
+  isWorkingDay = (
+    jy,
+    jm,
+    jd
+  ) => {
+    const {
+      workdays,
+    } = this.state;
+
+    if (
+      !Array.isArray(
+        workdays
+      ) ||
+      workdays.length === 0
+    ) {
+      return false;
+    }
+
+    const projectDay =
+      this.getProjectDay(
+        jy,
+        jm,
+        jd
+      );
+
+    if (
+      projectDay === null
+    ) {
+      return false;
+    }
+
+    return workdays.some(
+      (workday) =>
+        Number(
+          workday.day
+        ) === projectDay
+    );
+  };
+
   renderCalendar = () => {
     const {
       todayJY,
@@ -718,7 +934,34 @@ class Booking extends React.Component {
       jy,
       jm,
       jd,
+      workdaysLoading,
+      workdaysError,
+      workdaysLoaded,
     } = this.state;
+
+    if (workdaysLoading) {
+      return (
+        <div className="time-confirm">
+          در حال دریافت روزهای کاری...
+        </div>
+      );
+    }
+
+    if (workdaysError) {
+      return (
+        <div className="time-confirm">
+          {workdaysError}
+        </div>
+      );
+    }
+
+    if (!workdaysLoaded) {
+      return (
+        <div className="time-confirm">
+          روزهای کاری دریافت نشده است.
+        </div>
+      );
+    }
 
     const [
       gy,
@@ -779,11 +1022,17 @@ class Booking extends React.Component {
           viewJM === todayJM &&
           day < todayJD);
 
+      const isWorking =
+        this.isWorkingDay(
+          viewJY,
+          viewJM,
+          day
+        );
+
       const isUnavail =
         isPast ||
-        unavailOffsets.includes(
-          day % 14
-        );
+        isToday ||
+        !isWorking;
 
       const isSelected =
         jy === viewJY &&
@@ -794,19 +1043,16 @@ class Booking extends React.Component {
         <button
           key={day}
           type="button"
-          className={`cal-day ${
-            isUnavail
+          className={`cal-day ${isUnavail
               ? "unavail"
               : ""
-          } ${
-            isToday
+            } ${isToday
               ? "today"
               : ""
-          } ${
-            isSelected
+            } ${isSelected
               ? "selected"
               : ""
-          }`}
+            }`}
           onClick={() => {
             if (!isUnavail) {
               this.selectDate(
@@ -814,6 +1060,9 @@ class Booking extends React.Component {
               );
             }
           }}
+          disabled={
+            isUnavail
+          }
         >
           {toFa(day)}
         </button>
@@ -875,7 +1124,7 @@ class Booking extends React.Component {
         {!servicesLoading &&
           !servicesError &&
           services.length ===
-            0 && (
+          0 && (
             <div className="time-confirm">
               خدمتی برای نمایش
               وجود ندارد.
@@ -922,7 +1171,7 @@ class Booking extends React.Component {
             <span className="cal-month-title">
               {
                 jMonthNames[
-                  viewJM - 1
+                viewJM - 1
                 ]
               }{" "}
               {toFa(viewJY)}
@@ -996,6 +1245,9 @@ class Booking extends React.Component {
       doctors,
       doctorsLoading,
       doctorsError,
+      timeSlots,
+      timeSlotsLoading,
+      timeSlotsError,
       specialist,
       time,
       jy,
@@ -1005,10 +1257,17 @@ class Booking extends React.Component {
 
     const date =
       jy && jm && jd
-        ? `${toFa(jd)} ${
-            jMonthNames[jm - 1]
-          } ${toFa(jy)}`
+        ? `${toFa(jd)} ${jMonthNames[jm - 1]
+        } ${toFa(jy)}`
         : "";
+
+    const loading =
+      doctorsLoading ||
+      timeSlotsLoading;
+
+    const error =
+      doctorsError ||
+      timeSlotsError;
 
     return (
       <div className="screen active">
@@ -1021,98 +1280,143 @@ class Booking extends React.Component {
           <span>{date}</span>
         </div>
 
-        <div className="spec-label">
-          متخصصین
-        </div>
-
-        {doctorsLoading && (
+        {loading && (
           <div className="time-confirm">
-            در حال دریافت پزشکان...
+            در حال دریافت زمان‌های آزاد...
           </div>
         )}
 
-        {doctorsError && (
+        {error && (
           <div className="time-confirm">
-            {doctorsError}
+            {error}
           </div>
         )}
 
-        {!doctorsLoading &&
-          !doctorsError &&
-          doctors.map(
-            (doctor) => (
-              <SpecialistItem
-                key={doctor.id}
-                specialist={doctor}
-                selected={
-                  specialist?.id ===
-                  doctor.id
-                }
-                onSelect={
-                  this.selectSpecialist
-                }
-              />
-            )
-          )}
+        {!loading &&
+          !error && (
+            <>
+              <div className="spec-label">
+                متخصصین
+              </div>
 
-        {!doctorsLoading &&
-          !doctorsError &&
-          doctors.length ===
-            0 && (
-            <div className="time-confirm">
-              پزشکی برای این خدمت
-              وجود ندارد.
-            </div>
-          )}
+              {doctors.map(
+                (doctor) => (
+                  <SpecialistItem
+                    key={
+                      doctor.doctor.id
+                    }
+                    specialist={
+                      doctor.doctor
+                    }
+                    selected={
+                      specialist?.id ===
+                      doctor.doctor.id
+                    }
+                    onSelect={() =>
+                      this.selectSpecialist(
+                        doctor
+                      )
+                    }
+                  />
+                )
+              )}
 
-        <div className="spec-label">
-          بازه‌های زمانی
-        </div>
+              {doctors.length ===
+                0 && (
+                  <div className="time-confirm">
+                    پزشکی برای این خدمت
+                    در این روز وجود ندارد.
+                  </div>
+                )}
 
-        <div className="time-grid">
-          {timesAll.map(
-            (item) => {
-              const unavailable =
-                unavailTimes.includes(
-                  item
-                );
+              <div className="spec-label">
+                بازه‌های زمانی
+              </div>
 
-              return (
-                <button
-                  type="button"
-                  key={item}
-                  className={`time-slot ${
-                    unavailable
-                      ? "unavail"
-                      : ""
-                  } ${
-                    time === item
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    this.selectTime(
-                      item
-                    )
-                  }
-                  disabled={
-                    unavailable
-                  }
-                >
-                  {item}
-                </button>
-              );
-            }
-          )}
-        </div>
+              {!specialist && (
+                <div className="time-confirm">
+                  ابتدا متخصص موردنظر را
+                  انتخاب کنید.
+                </div>
+              )}
 
-        {specialist &&
-          time && (
-            <div className="time-confirm">
-              {time} ·{" "}
-              {specialist.first_name}{" "}
-              {specialist.last_name}
-            </div>
+              {specialist && (
+                <div className="time-grid">
+                  {timeSlots.map(
+                    (slot) => {
+                      const doctorSlot =
+                        specialist.slots?.find(
+                          (item) =>
+                            Number(
+                              item.id
+                            ) ===
+                            Number(
+                              slot.id
+                            )
+                        );
+
+                      const unavailable =
+                        !doctorSlot ||
+                        !doctorSlot.available;
+
+                      const selected =
+                        time?.id ===
+                        slot.id;
+
+                      return (
+                        <button
+                          type="button"
+                          key={slot.id}
+                          className={`time-slot ${unavailable
+                              ? "unavail"
+                              : ""
+                            } ${selected
+                              ? "selected"
+                              : ""
+                            }`}
+                          onClick={() =>
+                            this.selectTime(
+                              slot
+                            )
+                          }
+                          disabled={
+                            unavailable
+                          }
+                        >
+                          {toFa(
+                            slot.start_time
+                          )}{" "}
+                          -{" "}
+                          {toFa(
+                            slot.end_time
+                          )}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              )}
+
+              {specialist &&
+                time && (
+                  <div className="time-confirm">
+                    {toFa(
+                      time.start_time
+                    )}{" "}
+                    تا{" "}
+                    {toFa(
+                      time.end_time
+                    )}{" "}
+                    ·{" "}
+                    {
+                      specialist.first_name
+                    }{" "}
+                    {
+                      specialist.last_name
+                    }
+                  </div>
+                )}
+            </>
           )}
       </div>
     );
@@ -1137,14 +1441,14 @@ class Booking extends React.Component {
       this.getDateString();
 
     const specialistName =
-      `${specialist.first_name || ""} ${
-        specialist.last_name || ""
-      }`.trim();
+      `${specialist.first_name || ""} ${specialist.last_name || ""
+        }`.trim();
 
     const rows = [
       {
         label: "خدمت",
-        value: service.name,
+        value:
+          service.name,
         go: 0,
       },
       {
@@ -1160,14 +1464,20 @@ class Booking extends React.Component {
       },
       {
         label: "زمان",
-        value: time,
+        value:
+          `${toFa(
+            time.start_time
+          )} تا ${toFa(
+            time.end_time
+          )}`,
         go: 2,
       },
       {
         label: "مدت زمان",
-        value: `${toFa(
-          service.duration_minutes
-        )} دقیقه`,
+        value:
+          `${toFa(
+            service.duration_minutes
+          )} دقیقه`,
         go: 0,
       },
     ];
@@ -1320,11 +1630,10 @@ class Booking extends React.Component {
         </div>
 
         <div
-          className={`pm-option ${
-            payment === "sep"
+          className={`pm-option ${payment === "sep"
               ? "selected"
               : ""
-          }`}
+            }`}
           onClick={() =>
             this.selectPayment(
               "sep"
@@ -1354,11 +1663,10 @@ class Booking extends React.Component {
         </div>
 
         <div
-          className={`pm-option ${
-            payment === "zarinpal"
+          className={`pm-option ${payment === "zarinpal"
               ? "selected"
               : ""
-          }`}
+            }`}
           onClick={() =>
             this.selectPayment(
               "zarinpal"
@@ -1388,11 +1696,10 @@ class Booking extends React.Component {
         </div>
 
         <div
-          className={`pm-option ${
-            payment === "zibal"
+          className={`pm-option ${payment === "zibal"
               ? "selected"
               : ""
-          }`}
+            }`}
           onClick={() =>
             this.selectPayment(
               "zibal"
@@ -1501,6 +1808,7 @@ class Booking extends React.Component {
       this.goToStep(
         step + 1
       );
+
       return;
     }
 
@@ -1606,16 +1914,14 @@ class Booking extends React.Component {
                     key={
                       item.label
                     }
-                    className={`step-bar ${
-                      index < step
+                    className={`step-bar ${index < step
                         ? "done"
                         : ""
-                    } ${
-                      index ===
-                      step
+                      } ${index ===
+                        step
                         ? "active"
                         : ""
-                    }`}
+                      }`}
                   >
                     <div className="step-bar-fill" />
                   </div>
@@ -1633,12 +1939,11 @@ class Booking extends React.Component {
                     key={
                       item.label
                     }
-                    className={`step-label ${
-                      index <=
-                      step
+                    className={`step-label ${index <=
+                        step
                         ? "active"
                         : ""
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </span>
@@ -1669,15 +1974,13 @@ class Booking extends React.Component {
 
             <button
               type="button"
-              className={`continue-btn ${
-                disabled
+              className={`continue-btn ${disabled
                   ? "disabled"
                   : ""
-              } ${
-                success
+                } ${success
                   ? "success"
                   : ""
-              }`}
+                }`}
               onClick={
                 this.handleContinue
               }
