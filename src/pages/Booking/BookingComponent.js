@@ -326,6 +326,8 @@ class Booking extends React.Component {
       workdaysLoaded: false,
 
       success: false,
+      bookingLoading: false,
+      bookingError: null,
     };
   }
 
@@ -1044,8 +1046,8 @@ class Booking extends React.Component {
           key={day}
           type="button"
           className={`cal-day ${isUnavail
-              ? "unavail"
-              : ""
+            ? "unavail"
+            : ""
             } ${isToday
               ? "today"
               : ""
@@ -1368,8 +1370,8 @@ class Booking extends React.Component {
                           type="button"
                           key={slot.id}
                           className={`time-slot ${unavailable
-                              ? "unavail"
-                              : ""
+                            ? "unavail"
+                            : ""
                             } ${selected
                               ? "selected"
                               : ""
@@ -1631,8 +1633,8 @@ class Booking extends React.Component {
 
         <div
           className={`pm-option ${payment === "sep"
-              ? "selected"
-              : ""
+            ? "selected"
+            : ""
             }`}
           onClick={() =>
             this.selectPayment(
@@ -1664,8 +1666,8 @@ class Booking extends React.Component {
 
         <div
           className={`pm-option ${payment === "zarinpal"
-              ? "selected"
-              : ""
+            ? "selected"
+            : ""
             }`}
           onClick={() =>
             this.selectPayment(
@@ -1697,8 +1699,8 @@ class Booking extends React.Component {
 
         <div
           className={`pm-option ${payment === "zibal"
-              ? "selected"
-              : ""
+            ? "selected"
+            : ""
             }`}
           onClick={() =>
             this.selectPayment(
@@ -1735,6 +1737,12 @@ class Booking extends React.Component {
           اطلاعات کارت شما هرگز
           ذخیره نمی‌شود.
         </p>
+
+        {this.state.bookingError && (
+          <div className="time-confirm">
+            {this.state.bookingError}
+          </div>
+        )}
 
         {success && (
           <div className="time-confirm">
@@ -1785,44 +1793,151 @@ class Booking extends React.Component {
     }
 
     return {
-      disabled: false,
-      label: "پرداخت بیعانه",
+      disabled: this.state.bookingLoading || this.state.success,
+      label: this.state.bookingLoading
+        ? "در حال ثبت نوبت..."
+        : "پرداخت بیعانه",
     };
+  };
+
+  submitBooking = (withDeposit) => {
+    const {
+      service,
+      specialist,
+      time,
+      jy,
+      jm,
+      jd,
+      payment,
+    } = this.state;
+
+    if (!service || !specialist || !time || !jy || !jm || !jd) {
+      return;
+    }
+
+    const [gy, gm, gd] = jalaliToGregorian(jy, jm, jd);
+
+    const appointmentDate =
+      `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
+
+    const token = localStorage.getItem("token");
+
+    const url = withDeposit
+      ? "http://127.0.0.1:8000/api/booking/deposit"
+      : "http://127.0.0.1:8000/api/booking/no-deposit";
+
+    this.setState({
+      bookingLoading: true,
+      bookingError: null,
+    });
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(token
+          ? {
+            Authorization: `Bearer ${token}`,
+          }
+          : {}),
+      },
+      body: JSON.stringify({
+        service_id: service.id,
+        doctor_id: specialist.id,
+        doctor_working_time_slot_id:
+          time.doctor_working_time_slot_id,
+        appointment_date: appointmentDate,
+        payment_method: withDeposit ? payment : "other",
+      }),
+    })
+      .then((response) => {
+        return response.json().catch(() => null).then((result) => {
+          if (!response.ok) {
+            throw new Error(
+              result?.message ||
+              "ثبت نوبت با خطا مواجه شد."
+            );
+          }
+
+          return result;
+        });
+      })
+      .then((result) => {
+        if (!result?.success) {
+          throw new Error(
+            result?.message ||
+            "ثبت نوبت انجام نشد."
+          );
+        }
+
+        const appointmentId =
+          result?.data?.appointment?.id;
+
+        if (!appointmentId) {
+          throw new Error(
+            "نوبت ثبت شد اما شناسه نوبت دریافت نشد."
+          );
+        }
+
+        this.setState({
+          success: true,
+          bookingLoading: false,
+          bookingError: null,
+        });
+
+        setTimeout(() => {
+          this.props.navigate(
+            `/appointments/detail/${appointmentId}`
+          );
+        }, 3000);
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          bookingLoading: false,
+          bookingError:
+            error.message ||
+            "خطا در ثبت نوبت.",
+        });
+      });
   };
 
   handleContinue = () => {
     const {
       step,
       success,
+      bookingLoading,
     } = this.state;
 
     const {
       disabled,
     } = this.getContinueState();
 
-    if (disabled) {
+    if (disabled || success || bookingLoading) {
       return;
     }
 
     if (step < 4) {
-      this.goToStep(
-        step + 1
-      );
-
+      this.goToStep(step + 1);
       return;
     }
 
-    if (!success) {
-      this.setState({
-        success: true,
-      });
-    }
+    this.submitBooking(true);
   };
 
   handleSkip = () => {
-    this.setState({
-      success: true,
-    });
+    const {
+      success,
+      bookingLoading,
+    } = this.state;
+
+    if (success || bookingLoading) {
+      return;
+    }
+
+    this.submitBooking(false);
   };
 
   renderCurrentStep = () => {
@@ -1915,8 +2030,8 @@ class Booking extends React.Component {
                       item.label
                     }
                     className={`step-bar ${index < step
-                        ? "done"
-                        : ""
+                      ? "done"
+                      : ""
                       } ${index ===
                         step
                         ? "active"
@@ -1940,9 +2055,9 @@ class Booking extends React.Component {
                       item.label
                     }
                     className={`step-label ${index <=
-                        step
-                        ? "active"
-                        : ""
+                      step
+                      ? "active"
+                      : ""
                       }`}
                   >
                     {item.label}
@@ -1975,8 +2090,8 @@ class Booking extends React.Component {
             <button
               type="button"
               className={`continue-btn ${disabled
-                  ? "disabled"
-                  : ""
+                ? "disabled"
+                : ""
                 } ${success
                   ? "success"
                   : ""
@@ -1997,6 +2112,9 @@ class Booking extends React.Component {
                     type="button"
                     onClick={
                       this.handleSkip
+                    }
+                    disabled={
+                      this.state.bookingLoading
                     }
                   >
                     ادامه بدون بیعانه

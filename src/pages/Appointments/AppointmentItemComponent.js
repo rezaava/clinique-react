@@ -90,7 +90,6 @@ class AppointmentItem extends React.Component {
           </span>
         </div>
 
-        {showSolidButton ? (
           <div className="appt-card-btns">
           <Link
             to={`/appointments/detail/${id}`}
@@ -103,14 +102,6 @@ class AppointmentItem extends React.Component {
               رزرو مجدد
             </button>
           </div>
-        ) : (
-          <a
-            href={`/appointment/${id}`}
-            className="btn-sm-outline"
-          >
-            مشاهده جزئیات
-          </a>
-        )}
       </div>
     );
   }
