@@ -828,14 +828,12 @@ class Booking extends React.Component {
   };
 
   getPriceData = () => {
-    const {
-      service,
-      specialist,
-    } = this.state;
+    const { service, specialist } = this.state;
 
     if (!service) {
       return {
         price: 0,
+        depositPercentage: 0,
         deposit: 0,
         balance: 0,
       };
@@ -843,20 +841,22 @@ class Booking extends React.Component {
 
     const price =
       Number(
-        specialist?.service?.price ??
-        service.price
+        specialist?.service?.price ?? service.price
       ) || 0;
 
-    const deposit =
-      Math.round(
-        (price * 0.3) / 1000
-      ) * 1000;
+    const depositPercentage = Math.min(
+      100,
+      Math.max(0, Number(service.deposit_percentage) || 0)
+    );
 
-    const balance =
-      price - deposit;
+    const deposit =
+      Math.round((price * depositPercentage / 100) / 1000) * 1000;
+
+    const balance = price - deposit;
 
     return {
       price,
+      depositPercentage,
       deposit,
       balance,
     };
@@ -1486,6 +1486,7 @@ class Booking extends React.Component {
 
     const {
       price,
+      depositPercentage,
       deposit,
       balance,
     } = this.getPriceData();
@@ -1543,9 +1544,8 @@ class Booking extends React.Component {
 
           <div className="price-row deposit">
             <span className="l">
-              بیعانه لازم (۳۰٪)
+              بیعانه لازم ({toFa(depositPercentage)}٪)
             </span>
-
             <span className="v">
               {toman(deposit)}
             </span>
@@ -1578,6 +1578,7 @@ class Booking extends React.Component {
 
     const {
       price,
+      depositPercentage,
       deposit,
       balance,
     } = this.getPriceData();
@@ -1598,9 +1599,8 @@ class Booking extends React.Component {
 
             <div className="pay-summary-row">
               <span className="l">
-                بیعانه لازم (۳۰٪)
+                بیعانه لازم ({toFa(depositPercentage)}٪)
               </span>
-
               <span className="v">
                 {toman(deposit)}
               </span>
