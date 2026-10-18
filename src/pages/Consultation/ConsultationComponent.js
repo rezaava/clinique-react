@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./../../css/Consultation.css";
 import withRouter from "../withRouter";
-
 import ConsultationConcernItem from "./ConsultationConcernItemComponent";
 import ConsultationSpecialistItem from "./ConsultationSpecialistItemComponent";
 import ConsultationDateItem from "./ConsultationDateItemComponent";
@@ -18,115 +17,38 @@ const labels = {
   6: "",
 };
 
-const dates = [
-  {
-    id: 1,
-    day: "شنبه",
-    num: "۱۴",
-    month: "شهریور",
-  },
-  {
-    id: 2,
-    day: "یکشنبه",
-    num: "۱۵",
-    month: "شهریور",
-  },
-  {
-    id: 3,
-    day: "دوشنبه",
-    num: "۱۶",
-    month: "شهریور",
-  },
-  {
-    id: 4,
-    day: "سه‌شنبه",
-    num: "۱۷",
-    month: "شهریور",
-  },
-  {
-    id: 5,
-    day: "چهارشنبه",
-    num: "۱۸",
-    month: "شهریور",
-  },
-  {
-    id: 6,
-    day: "شنبه",
-    num: "۲۱",
-    month: "شهریور",
-  },
-];
-
-const times = [
-  {
-    id: 1,
-    value: "۰۹:۰۰",
-    disabled: false,
-  },
-  {
-    id: 2,
-    value: "۱۰:۰۰",
-    disabled: false,
-  },
-  {
-    id: 3,
-    value: "۱۱:۳۰",
-    disabled: true,
-  },
-  {
-    id: 4,
-    value: "۱۴:۰۰",
-    disabled: false,
-  },
-  {
-    id: 5,
-    value: "۱۵:۳۰",
-    disabled: false,
-  },
-  {
-    id: 6,
-    value: "۱۶:۳۰",
-    disabled: true,
-  },
-  {
-    id: 7,
-    value: "۱۷:۰۰",
-    disabled: false,
-  },
-];
-
 class Consultation extends React.Component {
   state = {
     currentStep: 0,
     stepStack: [0],
-
     entryPath: null,
     directService: null,
-
     services: [],
     servicesLoading: true,
     servicesError: null,
-
     specialists: [],
     specialistsLoading: true,
     specialistsError: null,
-
     concerns: [],
     desc: "",
     photoAdded: false,
     photo: null,
     photoPreview: null,
-
     specMode: "any",
     specName: null,
-
-    dateNum: "۱۷",
-    dateDay: "سه‌شنبه",
-    dateMon: "شهریور",
-
+    specId: null,
+    dates: [],
+    selectedDateISO: "",
+    dateNum: "",
+    dateDay: "",
+    dateMon: "",
+    timeSlots: [],
+    timeSlotsLoading: false,
+    timeSlotsError: null,
+    selectedSlotId: null,
+    selectedSlot: null,
     anyTime: false,
-    time: "۱۵:۳۰",
-
+    time: "",
     name: "",
     phone: "",
     notes: "",
@@ -141,41 +63,93 @@ class Consultation extends React.Component {
 
     this.fetchServices();
     this.fetchSpecialists();
+    this.initializeDates();
   }
+
   componentWillUnmount() {
     const navOuter = document.querySelector(".bottom-nav");
 
     if (navOuter) {
       navOuter.style.display = "";
     }
+
+    if (this.state.photoPreview) {
+      URL.revokeObjectURL(this.state.photoPreview);
+    }
   }
 
+  getService = () => {
+    return this.state.directService || this.state.concerns[0] || null;
+  };
+
+  toISODate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  getPersianDate = (date, id) => {
+    const formatter = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+
+    const parts = formatter.formatToParts(date);
+    const getPart = (type) =>
+      parts.find((part) => part.type === type)?.value || "";
+
+    return {
+      id,
+      iso: this.toISODate(date),
+      day: getPart("weekday"),
+      num: getPart("day"),
+      month: getPart("month"),
+    };
+  };
+
+  initializeDates = () => {
+    const dates = [];
+
+    // از فردا به مدت ۱۴ روز تاریخ تولید می‌کنیم.
+    for (let i = 1; i <= 14; i++) {
+      const date = new Date();
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() + i);
+      dates.push(this.getPersianDate(date, i));
+    }
+
+    if (dates.length === 0) {
+      return;
+    }
+
+    this.setState({
+      dates,
+      selectedDateISO: dates[0].iso,
+      dateDay: dates[0].day,
+      dateNum: dates[0].num,
+      dateMon: dates[0].month,
+    });
+  };
+
   fetchServices = () => {
-    fetch(
-      "http://127.0.0.1:8000/api/services"
-    )
+    fetch("http://127.0.0.1:8000/api/services")
       .then((response) => {
         if (!response.ok) {
-          throw new Error(
-            "خطا در دریافت لیست خدمات"
-          );
+          throw new Error("خطا در دریافت لیست خدمات");
         }
 
         return response.json();
       })
       .then((result) => {
         if (!result.success) {
-          throw new Error(
-            result.message ||
-              "لیست خدمات دریافت نشد."
-          );
+          throw new Error(result.message || "لیست خدمات دریافت نشد.");
         }
 
         this.setState({
-          services:
-            Array.isArray(result.data)
-              ? result.data
-              : [],
+          services: Array.isArray(result.data) ? result.data : [],
           servicesLoading: false,
           servicesError: null,
         });
@@ -186,37 +160,27 @@ class Consultation extends React.Component {
         this.setState({
           services: [],
           servicesLoading: false,
-          servicesError:
-            error.message ||
-            "خطا در دریافت خدمات",
+          servicesError: error.message || "خطا در دریافت خدمات",
         });
       });
   };
 
   fetchSpecialists = () => {
-    fetch(
-      "http://127.0.0.1:8000/api/doctors"
-    )
+    fetch("http://127.0.0.1:8000/api/doctors")
       .then((response) => {
         if (!response.ok) {
-          throw new Error(
-            "خطا در دریافت لیست متخصصین"
-          );
+          throw new Error("خطا در دریافت لیست متخصصین");
         }
 
         return response.json();
       })
       .then((result) => {
         if (!result.success) {
-          throw new Error(
-            result.message ||
-              "لیست متخصصین دریافت نشد."
-          );
+          throw new Error(result.message || "لیست متخصصین دریافت نشد.");
         }
 
         const specialists =
-          result.data &&
-          Array.isArray(result.data.user)
+          result.data && Array.isArray(result.data.user)
             ? result.data.user
             : [];
 
@@ -232,11 +196,112 @@ class Consultation extends React.Component {
         this.setState({
           specialists: [],
           specialistsLoading: false,
-          specialistsError:
-            error.message ||
-            "خطا در دریافت متخصصین",
+          specialistsError: error.message || "خطا در دریافت متخصصین",
         });
       });
+  };
+
+  fetchTimeSlots = (dateISO) => {
+    const service = this.getService();
+    const { specId } = this.state;
+
+    if (!service?.id || !specId || !dateISO) {
+      this.setState({
+        timeSlots: [],
+        timeSlotsError: "خدمت، متخصص یا تاریخ انتخاب نشده است.",
+        timeSlotsLoading: false,
+      });
+      return;
+    }
+
+    this.setState({
+      timeSlots: [],
+      timeSlotsError: null,
+      timeSlotsLoading: true,
+      selectedSlotId: null,
+      selectedSlot: null,
+      time: "",
+    });
+
+    fetch(
+      `http://127.0.0.1:8000/api/freetimes/${dateISO}/${service.id}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((result) => {
+            throw new Error(
+              result.message || "خطا در دریافت زمان‌های کاری"
+            );
+          });
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        if (!result.success) {
+          throw new Error(
+            result.message || "زمان‌های کاری دریافت نشدند."
+          );
+        }
+
+        const doctors = result.data?.doctors || [];
+
+        const selectedDoctor = doctors.find(
+          (item) => String(item.doctor.id) === String(specId)
+        );
+
+        const availableSlots = selectedDoctor
+          ? selectedDoctor.slots
+            .filter(
+              (slot) =>
+                slot.available === true &&
+                slot.booked === false &&
+                slot.past === false
+            )
+            .map((slot) => ({
+              id: slot.doctor_working_time_slot_id,
+              value: `${slot.start_time} تا ${slot.end_time}`,
+              start_time: slot.start_time,
+              end_time: slot.end_time,
+              doctor_working_time_slot_id:
+                slot.doctor_working_time_slot_id,
+              working_time_slot_id: slot.id,
+              disabled: false,
+            }))
+          : [];
+
+        this.setState({
+          timeSlots: availableSlots,
+          timeSlotsLoading: false,
+          timeSlotsError: null,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+
+        this.setState({
+          timeSlots: [],
+          timeSlotsLoading: false,
+          timeSlotsError:
+            error.message || "خطا در دریافت زمان‌های خالی",
+        });
+      });
+  };
+
+  selectDate = (item) => {
+    this.setState(
+      {
+        selectedDateISO: item.iso,
+        dateDay: item.day,
+        dateNum: item.num,
+        dateMon: item.month,
+        selectedSlotId: null,
+        selectedSlot: null,
+        time: "",
+        anyTime: false,
+      },
+      () => this.fetchTimeSlots(item.iso)
+    );
   };
 
   goTo = (step, push = true) => {
@@ -251,42 +316,95 @@ class Consultation extends React.Component {
   goBack = () => {
     this.setState((prevState) => {
       if (prevState.stepStack.length > 1) {
-        const newStack = [
-          ...prevState.stepStack,
-        ];
-
+        const newStack = [...prevState.stepStack];
         newStack.pop();
 
         return {
-          currentStep:
-            newStack[newStack.length - 1],
+          currentStep: newStack[newStack.length - 1],
           stepStack: newStack,
         };
       }
 
       this.props.navigate("/services");
-
       return null;
     });
   };
 
+  continueFromStep3 = () => {
+    const { specMode, specId } = this.state;
+
+    if (specMode === "any") {
+      // در این حالت انتخاب زمان رد می‌شود.
+      // اختصاص نزدیک‌ترین زمان باید هنگام ثبت درخواست در بک‌اند انجام شود.
+      this.goTo(5);
+      return;
+    }
+
+    if (!specId) {
+      alert("لطفاً یک متخصص انتخاب کنید.");
+      return;
+    }
+
+    const { selectedDateISO } = this.state;
+
+    this.goTo(4);
+
+    if (selectedDateISO) {
+      this.fetchTimeSlots(selectedDateISO);
+    }
+  };
+
+  continueFromStep4 = () => {
+    const { anyTime, selectedSlotId } = this.state;
+
+    if (!anyTime && !selectedSlotId) {
+      alert("لطفاً یکی از زمان‌های آزاد را انتخاب کنید.");
+      return;
+    }
+
+    this.goTo(5);
+  };
+
+  handleFooterContinue = () => {
+    const { currentStep } = this.state;
+
+    if (currentStep === 1) {
+      this.goTo(2);
+      return;
+    }
+
+    if (currentStep === 2) {
+      this.goTo(3);
+      return;
+    }
+
+    if (currentStep === 3) {
+      this.continueFromStep3();
+      return;
+    }
+
+    if (currentStep === 4) {
+      this.continueFromStep4();
+      return;
+    }
+
+    if (currentStep === 5) {
+      // ثبت درخواست فعلاً پیاده‌سازی نشده است.
+      // در مرحله بعد این بخش به API ثبت درخواست متصل می‌شود.
+      this.goTo(6);
+    }
+  };
+
   toggleConcern = (concern) => {
     this.setState((prevState) => {
-      const exists =
-        prevState.concerns.some(
-          (item) => item.id === concern.id
-        );
+      const exists = prevState.concerns.some(
+        (item) => item.id === concern.id
+      );
 
       return {
         concerns: exists
-          ? prevState.concerns.filter(
-              (item) =>
-                item.id !== concern.id
-            )
-          : [
-              ...prevState.concerns,
-              concern,
-            ],
+          ? prevState.concerns.filter((item) => item.id !== concern.id)
+          : [...prevState.concerns, concern],
       };
     });
   };
@@ -306,32 +424,27 @@ class Consultation extends React.Component {
           <path d="M12 17h.01" />
         </>
       ),
-
       check: (
         <>
           <circle cx="12" cy="12" r="10" />
           <path d="m9 12 2 2 4-4" />
         </>
       ),
-
       user: (
         <>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" />
         </>
       ),
-
       phone: (
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
       ),
-
       upload: (
         <>
           <path d="M12 16V4M8 8l4-4 4 4" />
           <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
         </>
       ),
-
       spark: (
         <path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z" />
       ),
@@ -364,21 +477,14 @@ class Consultation extends React.Component {
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          نمی‌دونید چی مناسبتونه؟
-        </h2>
-
+        <h2 className="wizard-title">نمی‌دونید چی مناسبتونه؟</h2>
         <p className="wizard-sub">
           قبل از تصمیم‌گیری با یک متخصص صحبت کنید. بدون نیاز به تعهد.
         </p>
 
         <button
           type="button"
-          className={`option-card ${
-            entryPath === "guide"
-              ? "selected"
-              : ""
-          }`}
+          className={`option-card ${entryPath === "guide" ? "selected" : ""}`}
           onClick={() =>
             this.setState(
               {
@@ -389,15 +495,9 @@ class Consultation extends React.Component {
             )
           }
         >
-          <span className="option-ic">
-            {this.renderIcon("question")}
-          </span>
-
+          <span className="option-ic">{this.renderIcon("question")}</span>
           <span>
-            <span className="option-t option-t-block">
-              به کمک نیاز دارم
-            </span>
-
+            <span className="option-t option-t-block">به کمک نیاز دارم</span>
             <span className="option-s">
               هنوز مطمئن نیستم — بذارید یک متخصص راهنماییم کنه
             </span>
@@ -406,11 +506,7 @@ class Consultation extends React.Component {
 
         <button
           type="button"
-          className={`option-card ${
-            entryPath === "direct"
-              ? "selected"
-              : ""
-          }`}
+          className={`option-card ${entryPath === "direct" ? "selected" : ""}`}
           onClick={() =>
             this.setState({
               entryPath: "direct",
@@ -418,86 +514,61 @@ class Consultation extends React.Component {
             })
           }
         >
-          <span className="option-ic">
-            {this.renderIcon("check")}
-          </span>
-
+          <span className="option-ic">{this.renderIcon("check")}</span>
           <span>
-            <span className="option-t option-t-block">
-              می‌دونم چی می‌خوام
-            </span>
-
-            <span className="option-s">
-              یک درمان خاص مدنظرم هست
-            </span>
+            <span className="option-t option-t-block">می‌دونم چی می‌خوام</span>
+            <span className="option-s">یک درمان خاص مدنظرم هست</span>
           </span>
         </button>
 
         {entryPath === "direct" && (
           <div className="direct-service-wrap">
-            <div className="field-label-sm">
-              انتخاب خدمت
-            </div>
+            <div className="field-label-sm">انتخاب خدمت</div>
 
-            {servicesLoading && (
-              <div>
-                در حال دریافت خدمات...
-              </div>
-            )}
+            {servicesLoading && <div>در حال دریافت خدمات...</div>}
 
-            {!servicesLoading &&
-              servicesError && (
-                <div>
-                  {servicesError}
-                </div>
-              )}
+            {!servicesLoading && servicesError && <div>{servicesError}</div>}
 
             {!servicesLoading &&
               !servicesError &&
               services.length === 0 && (
-                <div>
-                  خدمتی برای نمایش وجود ندارد.
-                </div>
+                <div>خدمتی برای نمایش وجود ندارد.</div>
               )}
 
-            {!servicesLoading &&
-              !servicesError &&
-              services.length > 0 && (
-                <div className="spty-select-grid">
-                  {services.map(
-                    (service) => (
-                      <button
-                        type="button"
-                        key={service.id}
-                        className={`spty-pill ${
-                          directService?.id ===
-                          service.id
-                            ? "selected"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          this.setState(
-                            {
-                              directService:
-                                service,
-                            },
-                            () =>
-                              setTimeout(
-                                () =>
-                                  this.goTo(
-                                    3
-                                  ),
-                                150
-                              )
-                          )
-                        }
-                      >
-                        {service.name}
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
+            {!servicesLoading && !servicesError && services.length > 0 && (
+              <div className="spty-select-grid">
+                {services.map((service) => (
+                  <button
+                    type="button"
+                    key={service.id}
+                    className={`spty-pill ${directService?.id === service.id ? "selected" : ""
+                      }`}
+                    onClick={() =>
+                      this.setState(
+                        {
+                          directService: service,
+                          concerns: [],
+                        },
+                        () =>
+                          setTimeout(() => {
+                            this.setState({
+                              specMode: "any",
+                              specName: null,
+                              specId: null,
+                              selectedSlotId: null,
+                              selectedSlot: null,
+                              timeSlots: [],
+                            });
+                            this.goTo(3);
+                          }, 150)
+                      )
+                    }
+                  >
+                    {service.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -514,78 +585,51 @@ class Consultation extends React.Component {
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          چه کمکی نیاز دارید؟
-        </h2>
-
+        <h2 className="wizard-title">چه کمکی نیاز دارید؟</h2>
         <p className="wizard-sub">
           همه موارد مرتبط رو انتخاب کنید — می‌تونید بیشتر از یکی رو انتخاب کنید.
         </p>
 
-        {servicesLoading && (
-          <div>
-            در حال دریافت خدمات...
+        {servicesLoading && <div>در حال دریافت خدمات...</div>}
+        {!servicesLoading && servicesError && <div>{servicesError}</div>}
+
+        {!servicesLoading &&
+          !servicesError &&
+          services.length === 0 && <div>خدمتی برای نمایش وجود ندارد.</div>}
+
+        {!servicesLoading && !servicesError && services.length > 0 && (
+          <div className="concern-grid">
+            {services.map((service) => (
+              <ConsultationConcernItem
+                key={service.id}
+                item={service}
+                selected={selectedConcerns.some(
+                  (item) => item.id === service.id
+                )}
+                onSelect={(item) =>
+                  this.setState({
+                    concerns: [item],
+                    directService: null,
+                  })
+                }
+              />
+            ))}
           </div>
         )}
 
-        {!servicesLoading &&
-          servicesError && (
-            <div>
-              {servicesError}
-            </div>
-          )}
-
-        {!servicesLoading &&
-          !servicesError &&
-          services.length === 0 && (
-            <div>
-              خدمتی برای نمایش وجود ندارد.
-            </div>
-          )}
-
-        {!servicesLoading &&
-          !servicesError &&
-          services.length > 0 && (
-            <div className="concern-grid">
-              {services.map((service) => (
-                <ConsultationConcernItem
-                  key={service.id}
-                  item={service}
-                  selected={selectedConcerns.some(
-                    (item) =>
-                      item.id === service.id
-                  )}
-                  onSelect={
-                    this.toggleConcern
-                  }
-                />
-              ))}
-            </div>
-          )}
-
         <p className="book-direct-link">
-          از قبل می‌دونید چی می‌خواید؟{" "}
-          <Link to="/services">
-            رزرو مستقیم ←
-          </Link>
+          از قبل می‌دونید چی می‌خواید؟ <Link to="/services">رزرو مستقیم ←</Link>
         </p>
       </div>
     );
   };
 
   renderStep2 = () => {
-    const {
-      desc,
-      photoAdded,
-      photoPreview,
-    } = this.state;
+    const { desc, photoAdded, photoPreview } = this.state;
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          کمی بیشتر توضیح بدید
-        </h2>
-
+        <h2 className="wizard-title">کمی بیشتر توضیح بدید</h2>
         <p className="wizard-sub">
           به ما کمک کنید بفهمیم دنبال چی هستید. پرکردن این بخش اختیاریه.
         </p>
@@ -593,23 +637,15 @@ class Consultation extends React.Component {
         <textarea
           className="field-input"
           value={desc}
-          onChange={(e) =>
-            this.setState({
-              desc: e.target.value,
-            })
-          }
+          onChange={(e) => this.setState({ desc: e.target.value })}
           placeholder="مثلاً: روی گونه‌هام لکه‌های تیره دارم که از بین نمی‌رن و می‌خوام گزینه‌هام رو بدونم…"
         />
 
-        <div className="field-label-sm">
-          افزودن عکس (اختیاری)
-        </div>
+        <div className="field-label-sm">افزودن عکس (اختیاری)</div>
 
         <label
           htmlFor="consultation-photo"
-          className={`upload-box ${
-            photoAdded ? "added" : ""
-          }`}
+          className={`upload-box ${photoAdded ? "added" : ""}`}
         >
           {photoPreview ? (
             <img
@@ -620,10 +656,7 @@ class Consultation extends React.Component {
           ) : (
             <>
               {this.renderIcon("upload")}
-
-              <span>
-                برای افزودن عکس ضربه بزنید
-              </span>
+              <span>برای افزودن عکس ضربه بزنید</span>
             </>
           )}
         </label>
@@ -640,11 +673,14 @@ class Consultation extends React.Component {
               return;
             }
 
+            if (this.state.photoPreview) {
+              URL.revokeObjectURL(this.state.photoPreview);
+            }
+
             this.setState({
               photo: file,
               photoAdded: true,
-              photoPreview:
-                URL.createObjectURL(file),
+              photoPreview: URL.createObjectURL(file),
             });
           }}
         />
@@ -655,9 +691,7 @@ class Consultation extends React.Component {
             className="remove-photo-btn"
             onClick={() => {
               if (this.state.photoPreview) {
-                URL.revokeObjectURL(
-                  this.state.photoPreview
-                );
+                URL.revokeObjectURL(this.state.photoPreview);
               }
 
               this.setState({
@@ -666,9 +700,7 @@ class Consultation extends React.Component {
                 photoPreview: null,
               });
 
-              document.getElementById(
-                "consultation-photo"
-              ).value = "";
+              document.getElementById("consultation-photo").value = "";
             }}
           >
             حذف عکس
@@ -676,10 +708,7 @@ class Consultation extends React.Component {
         )}
 
         <p className="book-direct-link book-direct-top">
-          از قبل می‌دونید چی می‌خواید؟{" "}
-          <Link to="/services">
-            رزرو مستقیم ←
-          </Link>
+          از قبل می‌دونید چی می‌خواید؟ <Link to="/services">رزرو مستقیم ←</Link>
         </p>
       </div>
     );
@@ -688,7 +717,7 @@ class Consultation extends React.Component {
   renderStep3 = () => {
     const {
       specMode,
-      specName,
+      specId,
       specialists,
       specialistsLoading,
       specialistsError,
@@ -696,37 +725,28 @@ class Consultation extends React.Component {
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          با کدوم متخصص صحبت کنید؟
-        </h2>
-
+        <h2 className="wizard-title">با کدوم متخصص صحبت کنید؟</h2>
         <p className="wizard-sub">
           می‌تونید این مرحله رو رد کنید — بهترین متخصص موجود رو معرفی می‌کنیم.
         </p>
 
         <button
           type="button"
-          className={`option-card ${
-            specMode === "any"
-              ? "selected"
-              : ""
-          }`}
+          className={`option-card ${specMode === "any" ? "selected" : ""}`}
           onClick={() =>
             this.setState({
               specMode: "any",
               specName: null,
+              specId: null,
+              selectedSlotId: null,
+              selectedSlot: null,
+              timeSlots: [],
             })
           }
         >
-          <span className="option-ic">
-            {this.renderIcon("spark")}
-          </span>
-
+          <span className="option-ic">{this.renderIcon("spark")}</span>
           <span>
-            <span className="option-t option-t-block">
-              هر متخصصی
-            </span>
-
+            <span className="option-t option-t-block">هر متخصصی</span>
             <span className="option-s">
               بهترین گزینه موجود برای مشکل شما
             </span>
@@ -735,84 +755,57 @@ class Consultation extends React.Component {
 
         <button
           type="button"
-          className={`option-card ${
-            specMode === "choose"
-              ? "selected expanded"
-              : ""
-          }`}
+          className={`option-card ${specMode === "choose" ? "selected expanded" : ""
+            }`}
           onClick={() =>
             this.setState({
               specMode: "choose",
             })
           }
         >
-          <span className="option-ic">
-            {this.renderIcon("user")}
-          </span>
-
+          <span className="option-ic">{this.renderIcon("user")}</span>
           <span>
-            <span className="option-t option-t-block">
-              انتخاب متخصص
-            </span>
-
-            <span className="option-s">
-              مشاهده متخصصین موجود
-            </span>
+            <span className="option-t option-t-block">انتخاب متخصص</span>
+            <span className="option-s">مشاهده متخصصین موجود</span>
           </span>
         </button>
 
         {specMode === "choose" && (
           <div className="mini-spec-list">
-            {specialistsLoading && (
-              <div>
-                در حال دریافت متخصصین...
-              </div>
+            {specialistsLoading && <div>در حال دریافت متخصصین...</div>}
+            {!specialistsLoading && specialistsError && (
+              <div>{specialistsError}</div>
             )}
-
-            {!specialistsLoading &&
-              specialistsError && (
-                <div>
-                  {specialistsError}
-                </div>
-              )}
-
             {!specialistsLoading &&
               !specialistsError &&
               specialists.length === 0 && (
-                <div>
-                  متخصصی برای نمایش وجود ندارد.
-                </div>
+                <div>متخصصی برای نمایش وجود ندارد.</div>
               )}
 
             {!specialistsLoading &&
               !specialistsError &&
-              specialists.map(
-                (specialist) => (
-                  <ConsultationSpecialistItem
-                    key={specialist.id}
-                    specialist={specialist}
-                    selected={
-                      specName ===
-                      `${specialist.first_name} ${specialist.last_name}`
-                    }
-                    onSelect={(item) =>
-                      this.setState({
-                        specName: `${item.first_name} ${item.last_name}`,
-                        specMode:
-                          "choose",
-                      })
-                    }
-                  />
-                )
-              )}
+              specialists.map((specialist) => (
+                <ConsultationSpecialistItem
+                  key={specialist.id}
+                  specialist={specialist}
+                  selected={String(specId) === String(specialist.id)}
+                  onSelect={(item) =>
+                    this.setState({
+                      specId: item.id,
+                      specName: `${item.first_name} ${item.last_name}`,
+                      specMode: "choose",
+                      selectedSlotId: null,
+                      selectedSlot: null,
+                      timeSlots: [],
+                    })
+                  }
+                />
+              ))}
           </div>
         )}
 
         <p className="book-direct-link">
-          از قبل می‌دونید چی می‌خواید؟{" "}
-          <Link to="/services">
-            رزرو مستقیم ←
-          </Link>
+          از قبل می‌دونید چی می‌خواید؟ <Link to="/services">رزرو مستقیم ←</Link>
         </p>
       </div>
     );
@@ -820,165 +813,140 @@ class Consultation extends React.Component {
 
   renderStep4 = () => {
     const {
-      anyTime,
+      dates,
+      selectedDateISO,
       dateDay,
       dateNum,
       dateMon,
-      time,
+      anyTime,
+      timeSlots,
+      timeSlotsLoading,
+      timeSlotsError,
+      selectedSlotId,
     } = this.state;
 
-    const selectedDate = dates.find(
-      (date) =>
-        date.day === dateDay &&
-        date.num === dateNum &&
-        date.month === dateMon
-    );
+    const selectedDate = dates.find((date) => date.iso === selectedDateISO);
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          چه زمانی مایلید صحبت کنید؟
-        </h2>
-
+        <h2 className="wizard-title">چه زمانی مایلید صحبت کنید؟</h2>
         <p className="wizard-sub">
           یک زمان مناسب انتخاب کنید یا بذارید نزدیک‌ترین نوبت خالی رو پیدا کنیم.
         </p>
 
         <button
           type="button"
-          className={`option-card any-time-card ${
-            anyTime ? "selected" : ""
-          }`}
+          className={`option-card any-time-card ${anyTime ? "selected" : ""}`}
           onClick={() =>
             this.setState((prevState) => ({
               anyTime: !prevState.anyTime,
+              selectedSlotId: null,
+              selectedSlot: null,
+              time: "",
             }))
           }
         >
-          <span className="option-ic">
-            {this.renderIcon("spark")}
-          </span>
-
+          <span className="option-ic">{this.renderIcon("spark")}</span>
           <span>
-            <span className="option-t option-t-block">
-              هر زمان خالی
-            </span>
-
+            <span className="option-t option-t-block">هر زمان خالی</span>
             <span className="option-s">
               نزدیک‌ترین نوبت خالی رو براتون رزرو می‌کنیم
             </span>
           </span>
         </button>
 
-        <div className="field-label-sm field-label-date">
-          انتخاب تاریخ
-        </div>
+        {!anyTime && (
+          <>
+            <div className="field-label-sm field-label-date">انتخاب تاریخ</div>
 
-        <div className="date-scroll2">
-          {dates.map((date) => (
-            <ConsultationDateItem
-              key={date.id}
-              date={date}
-              selected={
-                selectedDate?.id ===
-                date.id
-              }
-              onSelect={(item) =>
-                this.setState({
-                  dateDay: item.day,
-                  dateNum: item.num,
-                  dateMon: item.month,
-                })
-              }
-            />
-          ))}
-        </div>
+            <div className="date-scroll2">
+              {dates.map((date) => (
+                <ConsultationDateItem
+                  key={date.id}
+                  date={date}
+                  selected={selectedDate?.id === date.id}
+                  onSelect={this.selectDate}
+                />
+              ))}
+            </div>
 
-        <div className="time-label">
-          زمان‌های خالی — {dateDay} {dateNum}{" "}
-          {dateMon}
-        </div>
+            <div className="time-label">
+              زمان‌های خالی — {dateDay} {dateNum} {dateMon}
+            </div>
 
-        <div className="time-grid2">
-          {times.map((item) => (
-            <ConsultationTimeItem
-              key={item.id}
-              time={item}
-              selected={
-                time === item.value
-              }
-              onSelect={(selectedTime) =>
-                this.setState({
-                  time: selectedTime.value,
-                })
-              }
-            />
-          ))}
-        </div>
+            {timeSlotsLoading && (
+              <div className="time-loading">در حال دریافت زمان‌های آزاد...</div>
+            )}
+
+            {!timeSlotsLoading && timeSlotsError && (
+              <div className="time-error">{timeSlotsError}</div>
+            )}
+
+            {!timeSlotsLoading &&
+              !timeSlotsError &&
+              timeSlots.length === 0 && (
+                <div className="time-empty">
+                </div>
+              )}
+
+            {!timeSlotsLoading && timeSlots.length > 0 && (
+              <div className="time-grid2">
+                {timeSlots.map((item) => (
+                  <ConsultationTimeItem
+                    key={item.id}
+                    time={item}
+                    selected={selectedSlotId === item.id}
+                    onSelect={(selectedTime) =>
+                      this.setState({
+                        selectedSlotId:
+                          selectedTime.doctor_working_time_slot_id,
+                        selectedSlot: selectedTime,
+                        time: selectedTime.value,
+                        anyTime: false,
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     );
   };
 
   renderStep5 = () => {
-    const {
-      name,
-      phone,
-      notes,
-    } = this.state;
+    const { name, phone, notes } = this.state;
 
     return (
       <div className="wiz-step">
-        <h2 className="wizard-title">
-          تقریباً تمومه
-        </h2>
-
+        <h2 className="wizard-title">تقریباً تمومه</h2>
         <p className="wizard-sub">
           برای تأیید نهایی باهاتون تماس می‌گیریم. نیازی به ساخت حساب کاربری نیست.
         </p>
 
         <div className="field-group">
-          <div className="field-label">
-            نام و نام‌خانوادگی
-          </div>
-
+          <div className="field-label">نام و نام‌خانوادگی</div>
           <div className="field-with-icon">
             {this.renderIcon("user")}
-
             <input
               type="text"
               value={name}
-              onChange={(e) =>
-                this.handleInput(
-                  "name",
-                  e.target.value
-                )
-              }
+              onChange={(e) => this.handleInput("name", e.target.value)}
               placeholder="مثلاً محمد مهدوی"
             />
           </div>
         </div>
 
         <div className="field-group">
-          <div className="field-label">
-            شماره موبایل
-          </div>
-
+          <div className="field-label">شماره موبایل</div>
           <div className="field-with-icon">
             {this.renderIcon("phone")}
-
-            <span className="phone-prefix">
-              ۹۸+
-            </span>
-
+            <span className="phone-prefix">۹۸+</span>
             <input
               type="tel"
               value={phone}
-              onChange={(e) =>
-                this.handleInput(
-                  "phone",
-                  e.target.value
-                )
-              }
+              onChange={(e) => this.handleInput("phone", e.target.value)}
               placeholder="۹۱۲ ۳۴۵ ۶۷۸۹"
               className="phone-input"
             />
@@ -987,21 +955,12 @@ class Consultation extends React.Component {
 
         <div className="field-group field-group-last">
           <div className="field-label">
-            یادداشت{" "}
-            <span className="optional-label">
-              (اختیاری)
-            </span>
+            یادداشت <span className="optional-label">(اختیاری)</span>
           </div>
-
           <textarea
             className="field-input notes-input"
             value={notes}
-            onChange={(e) =>
-              this.handleInput(
-                "notes",
-                e.target.value
-              )
-            }
+            onChange={(e) => this.handleInput("notes", e.target.value)}
             placeholder="توضیح کوتاهی اضافه کنید…"
           />
         </div>
@@ -1024,16 +983,11 @@ class Consultation extends React.Component {
     } = this.state;
 
     const topic = selectedConcerns.length
-      ? selectedConcerns
-          .map((item) => item.name)
-          .join("، ")
-      : directService?.name ||
-        "مشخص نشده";
+      ? selectedConcerns.map((item) => item.name).join("، ")
+      : directService?.name || "مشخص نشده";
 
     const specialist =
-      specMode === "choose" && specName
-        ? specName
-        : "هر متخصص موجود";
+      specMode === "choose" && specName ? specName : "هر متخصص موجود";
 
     const selectedTime = anyTime
       ? "هر زمان خالی، نزدیک‌ترین نوبت"
@@ -1053,19 +1007,12 @@ class Consultation extends React.Component {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-              />
+              <circle cx="12" cy="12" r="10" />
               <path d="m8 12.5 2.5 2.5L16 9" />
             </svg>
           </div>
 
-          <h2 className="confirm-title">
-            درخواست مشاوره ارسال شد
-          </h2>
-
+          <h2 className="confirm-title">درخواست مشاوره ارسال شد</h2>
           <p className="confirm-sub">
             ظرف ۲۴ ساعت آینده برای تأیید نوبتتون باهاتون تماس می‌گیریم.
           </p>
@@ -1073,85 +1020,48 @@ class Consultation extends React.Component {
 
         <div className="confirm-card">
           <div className="confirm-row">
-            <span className="confirm-row-label">
-              موضوع
-            </span>
-
-            <span className="confirm-row-val">
-              {topic}
-            </span>
+            <span className="confirm-row-label">موضوع</span>
+            <span className="confirm-row-val">{topic}</span>
           </div>
 
           <div className="confirm-row">
-            <span className="confirm-row-label">
-              متخصص
-            </span>
-
-            <span className="confirm-row-val">
-              {specialist}
-            </span>
+            <span className="confirm-row-label">متخصص</span>
+            <span className="confirm-row-val">{specialist}</span>
           </div>
 
           <div className="confirm-row">
-            <span className="confirm-row-label">
-              زمان
-            </span>
-
-            <span className="confirm-row-val">
-              {selectedTime}
-            </span>
+            <span className="confirm-row-label">زمان</span>
+            <span className="confirm-row-val">{selectedTime}</span>
           </div>
 
           <div className="confirm-row">
-            <span className="confirm-row-label">
-              تماس
-            </span>
-
+            <span className="confirm-row-label">تماس</span>
             <span className="confirm-row-val confirm-phone">
               ۹۸+ {phone || "—"}
             </span>
           </div>
 
           <div className="confirm-row">
-            <span className="confirm-row-label">
-              وضعیت
-            </span>
-
-            <span className="confirm-row-val pending">
-              در انتظار تأیید
-            </span>
+            <span className="confirm-row-label">وضعیت</span>
+            <span className="confirm-row-val pending">در انتظار تأیید</span>
           </div>
         </div>
 
         <div className="confirm-alt-card">
-          <div className="confirm-alt-t">
-            می‌خواید مستقیم رزرو کنید؟
-          </div>
-
+          <div className="confirm-alt-t">می‌خواید مستقیم رزرو کنید؟</div>
           <p className="confirm-alt-s">
             از این مرحله رد شید و همین الان نوبتتون رو قطعی کنید.
           </p>
-
-          <Link
-            to="/services"
-            className="btn-solid-full"
-          >
+          <Link to="/services" className="btn-solid-full">
             رزرو نوبت
           </Link>
         </div>
 
         <div className="confirm-btns-row">
-          <Link
-            to="/request"
-            className="btn-out2"
-          >
+          <Link to="/request" className="btn-out2">
             مشاهده درخواست
           </Link>
-
-          <Link
-            to="/"
-            className="btn-dark2"
-          >
+          <Link to="/" className="btn-dark2">
             صفحه اصلی
           </Link>
         </div>
@@ -1163,25 +1073,18 @@ class Consultation extends React.Component {
     switch (this.state.currentStep) {
       case 0:
         return this.renderStep0();
-
       case 1:
         return this.renderStep1();
-
       case 2:
         return this.renderStep2();
-
       case 3:
         return this.renderStep3();
-
       case 4:
         return this.renderStep4();
-
       case 5:
         return this.renderStep5();
-
       case 6:
         return this.renderStep6();
-
       default:
         return null;
     }
@@ -1189,25 +1092,16 @@ class Consultation extends React.Component {
 
   render() {
     const { currentStep } = this.state;
-
     const showProgress = currentStep !== 0;
-
-    const showFooter =
-      currentStep !== 0 &&
-      currentStep !== 6;
+    const showFooter = currentStep !== 0 && currentStep !== 6;
 
     let footerText = "";
 
     if (currentStep === 1) {
-      footerText = this.state.concerns.length
-        ? "ادامه"
-        : "رد شو برای الان";
+      footerText = this.state.concerns.length ? "ادامه" : "رد شو برای الان";
     } else if (currentStep === 2) {
       footerText =
-        this.state.desc ||
-        this.state.photoAdded
-          ? "ادامه"
-          : "رد شو برای الان";
+        this.state.desc || this.state.photoAdded ? "ادامه" : "رد شو برای الان";
     } else if (currentStep === 3) {
       footerText = "ادامه";
     } else if (currentStep === 4) {
@@ -1240,49 +1134,47 @@ class Consultation extends React.Component {
               </svg>
             </button>
 
-            <h1 className="wiz-step-label">
-              {labels[currentStep]}
-            </h1>
+            <h1 className="wiz-step-label">{labels[currentStep]}</h1>
           </header>
 
           {showProgress && (
             <div className="progress-bar">
-              {Array.from({
-                length: 6,
-              }).map((_, index) => (
+              {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}
-                  className={`progress-seg ${
-                    index < currentStep
-                      ? "filled"
-                      : ""
-                  }`}
+                  className={`progress-seg ${index < currentStep ? "filled" : ""
+                    }`}
                 />
               ))}
             </div>
           )}
 
-          <div className="scroll-area">
-            {this.renderCurrentStep()}
-          </div>
+          <div className="scroll-area">{this.renderCurrentStep()}</div>
 
           {showFooter && (
             <div className="wiz-footer">
               <button
                 type="button"
                 className="wiz-btn"
-                onClick={() => {
-                  if (
-                    currentStep >= 1 &&
-                    currentStep <= 5
-                  ) {
-                    this.goTo(
-                      currentStep + 1
-                    );
-                  }
-                }}
+                onClick={this.handleFooterContinue}
               >
                 {footerText}
+
+                {currentStep === 4 &&
+                  (this.state.directService || this.state.concerns.length > 0) &&
+                  (() => {
+                    const service = this.getService();
+                    const price = Number(service?.consultation_price || 0);
+
+                    return (
+                      <span>
+                        {" - "}
+                        {price === 0
+                          ? "رایگان"
+                          : `قیمت: ${price.toLocaleString("fa-IR")} تومان`}
+                      </span>
+                    );
+                  })()}
               </button>
             </div>
           )}

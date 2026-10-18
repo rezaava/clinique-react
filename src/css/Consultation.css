@@ -201,6 +201,7 @@ textarea {
 .progress-bar {
   display: flex;
   gap: 6px;
+  margin-bottom: 15px;
   padding: 12px 20px 0;
   flex-shrink: 0;
 }
