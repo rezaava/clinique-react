@@ -52,6 +52,8 @@ class Consultation extends React.Component {
     name: "",
     phone: "",
     notes: "",
+    isSubmitting: false,
+    submitError: null,
   };
 
   componentDidMount() {
@@ -365,6 +367,110 @@ class Consultation extends React.Component {
     this.goTo(5);
   };
 
+  submitConsultation = () => {
+    const {
+      name,
+      phone,
+      desc,
+      photo,
+      notes,
+      specMode,
+      specId,
+      selectedSlotId,
+      selectedDateISO,
+      anyTime,
+    } = this.state;
+    const service = this.getService();
+
+    if (!service?.id) {
+      this.setState({ submitError: "لطفاً ابتدا خدمت موردنظر را انتخاب کنید." });
+      return;
+    }
+
+    if (!name.trim()) {
+      this.setState({ submitError: "لطفاً نام و نام‌خانوادگی را وارد کنید." });
+      return;
+    }
+
+    if (!phone.trim()) {
+      this.setState({ submitError: "لطفاً شماره موبایل را وارد کنید." });
+      return;
+    }
+
+    const hasSelectedDoctor = specMode === "choose" && Boolean(specId);
+    const hasSelectedTime = hasSelectedDoctor && !anyTime && Boolean(selectedSlotId);
+
+    if (specMode === "choose" && !specId) {
+      this.setState({ submitError: "لطفاً متخصص را انتخاب کنید یا گزینه هر متخصصی را بزنید." });
+      return;
+    }
+
+    if (hasSelectedDoctor && !anyTime && !hasSelectedTime) {
+      this.setState({ submitError: "لطفاً یک زمان آزاد انتخاب کنید یا گزینه هر زمان خالی را بزنید." });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("service_id", String(service.id));
+    formData.append("name", name.trim());
+    formData.append("phone", phone.trim());
+    formData.append("description", desc || "");
+    formData.append("notes", notes || "");
+    formData.append("type", "in_person");
+    formData.append("any_time", hasSelectedTime ? "0" : "1");
+
+    if (photo) {
+      formData.append("photo", photo);
+    }
+
+    if (hasSelectedDoctor) {
+      formData.append("doctor_id", String(specId));
+    }
+
+    if (hasSelectedTime) {
+      formData.append("doctor_working_time_slot_id", String(selectedSlotId));
+      formData.append("consultation_date", selectedDateISO);
+    }
+
+    this.setState({ isSubmitting: true, submitError: null });
+
+    fetch("http://localhost:8000/api/consultations/store", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      body: formData,
+    })
+      .then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || !result.success) {
+          const validationErrors = result.errors
+            ? Object.values(result.errors).flat().join("\n")
+            : null;
+          throw new Error(
+            validationErrors || result.message || "ثبت درخواست مشاوره انجام نشد."
+          );
+        }
+
+        return result;
+      })
+      .then((result) => {
+        this.setState({
+          isSubmitting: false,
+          submitError: null,
+          consultationId: result.data?.consultation?.id || null,
+        }, () => this.goTo(6));
+      })
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          isSubmitting: false,
+          submitError: error.message || "خطا در ارسال درخواست مشاوره.",
+        });
+      });
+  };
+
   handleFooterContinue = () => {
     const { currentStep } = this.state;
 
@@ -389,9 +495,8 @@ class Consultation extends React.Component {
     }
 
     if (currentStep === 5) {
-      // ثبت درخواست فعلاً پیاده‌سازی نشده است.
-      // در مرحله بعد این بخش به API ثبت درخواست متصل می‌شود.
-      this.goTo(6);
+      this.submitConsultation();
+      return;
     }
   };
 
@@ -916,7 +1021,7 @@ class Consultation extends React.Component {
   };
 
   renderStep5 = () => {
-    const { name, phone, notes } = this.state;
+    const { name, phone, notes, submitError, isSubmitting } = this.state;
 
     return (
       <div className="wiz-step">
@@ -964,6 +1069,12 @@ class Consultation extends React.Component {
             placeholder="توضیح کوتاهی اضافه کنید…"
           />
         </div>
+
+        {submitError && (
+          <div className="time-error" role="alert" style={{ whiteSpace: "pre-line" }}>
+            {submitError}
+          </div>
+        )}
       </div>
     );
   };
@@ -1157,8 +1268,9 @@ class Consultation extends React.Component {
                 type="button"
                 className="wiz-btn"
                 onClick={this.handleFooterContinue}
+                disabled={currentStep === 5 && this.state.isSubmitting}
               >
-                {footerText}
+                {currentStep === 5 && this.state.isSubmitting ? "در حال ارسال..." : footerText}
 
                 {currentStep === 4 &&
                   (this.state.directService || this.state.concerns.length > 0) &&
