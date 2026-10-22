@@ -13,6 +13,8 @@ import AppointmentsDet from './pages/Appointments/AppointmentsDetailComponent';
 import Appointments from './pages/Appointments/AppointmentsComponent';
 import Consultation from './pages/Consultation/ConsultationComponent';
 import Booking from './pages/Booking/BookingComponent';
+import Login from './pages/Auth/LoginComponent';
+import Register from './pages/Auth/RegisterComponent';
 
 
 function App() {
@@ -37,6 +39,9 @@ function App() {
             <Route path="/booking" element={<Booking />}/>
 
             <Route path="/consultation" element={<Consultation />}/>
+            
+            <Route path="/login" element={<Login />}/>
+            <Route path="/register" element={<Register />}/>
 
           </Routes>
 
