@@ -18,7 +18,14 @@ class AppointmentsDet extends React.Component {
   getAppointment = () => {
     const { id } = this.props.params;
 
-    fetch(`http://localhost:8000/api/appointment/det/${id}`)
+
+    fetch(`http://localhost:8000/api/appointment/det/${id}`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("خطا در دریافت اطلاعات نوبت");
@@ -130,7 +137,7 @@ class AppointmentsDet extends React.Component {
 
     const paidAmount =
       transaction?.paid_amount !== undefined &&
-      transaction?.paid_amount !== null
+        transaction?.paid_amount !== null
         ? Number(transaction.paid_amount)
         : Number(appointment.deposit_amount || 0);
 
@@ -206,7 +213,7 @@ class AppointmentsDet extends React.Component {
 
     const paidAmount =
       transaction?.paid_amount !== undefined &&
-      transaction?.paid_amount !== null
+        transaction?.paid_amount !== null
         ? Number(transaction.paid_amount)
         : Number(appointment.deposit_amount || 0);
 
@@ -285,12 +292,12 @@ class AppointmentsDet extends React.Component {
       cancelling: true,
       actionMessage: null,
     });
-
     fetch(`http://localhost:8000/api/appointment/cancel/${appointment.id}`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     })
       .then((response) => {
@@ -323,14 +330,14 @@ class AppointmentsDet extends React.Component {
               updatedAppointment.transaction ||
               (prevState.appointment.transaction
                 ? {
-                    ...prevState.appointment.transaction,
-                    status:
-                      Number(
-                        prevState.appointment.transaction.paid_amount || 0
-                      ) > 0
-                        ? "refunded"
-                        : "cancelled",
-                  }
+                  ...prevState.appointment.transaction,
+                  status:
+                    Number(
+                      prevState.appointment.transaction.paid_amount || 0
+                    ) > 0
+                      ? "refunded"
+                      : "cancelled",
+                }
                 : null),
           },
           cancelling: false,
@@ -509,8 +516,8 @@ class AppointmentsDet extends React.Component {
 
     const providerName = staff
       ? staff.name ||
-        `${staff.first_name || ""} ${staff.last_name || ""}`.trim() ||
-        "پزشک / متخصص"
+      `${staff.first_name || ""} ${staff.last_name || ""}`.trim() ||
+      "پزشک / متخصص"
       : "پزشک / متخصص";
 
     const providerRole = staff?.ability || "پزشک / متخصص";
@@ -525,8 +532,8 @@ class AppointmentsDet extends React.Component {
       avatarParts.length >= 2
         ? `${avatarParts[0].charAt(0)}‌${avatarParts[1].charAt(0)}`
         : avatarParts.length === 1
-        ? avatarParts[0].substring(0, 2)
-        : "د";
+          ? avatarParts[0].substring(0, 2)
+          : "د";
 
     const clinicName =
       appointment.clinic?.name || "کلینیک زیبایی لومیر";

@@ -535,9 +535,13 @@ class Booking extends React.Component {
       time: null,
     });
 
-    fetch(
-      `http://127.0.0.1:8000/api/freetimes/${date}/${service.id}`
-    )
+    fetch(`http://127.0.0.1:8000/api/freetimes/${date}/${service.id}`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then((response) => {
         if (!response.ok) {
           return response.json()

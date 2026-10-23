@@ -222,6 +222,7 @@ class Register extends React.Component {
                                     <input
                                         id="register-phone"
                                         type="tel"
+                                        maxLength={11}
                                         name="phone"
                                         value={this.state.phone}
                                         onChange={this.handleChange}

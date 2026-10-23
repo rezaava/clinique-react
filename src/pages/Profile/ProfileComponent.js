@@ -19,15 +19,26 @@ class Profile extends React.Component {
     this.getProfile();
   }
 
-  getProfile = () => {
-    fetch("http://127.0.0.1:8000/api/profile")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("خطا در دریافت اطلاعات پروفایل");
-        }
+  handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
-        return response.json();
-      })
+  getProfile = () => {
+    fetch("http://127.0.0.1:8000/api/profile", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error("خطا در دریافت اطلاعات پروفایل");
+      }
+
+      return response.json();
+    })
       .then((result) => {
         const user = result.data?.user || null;
 
@@ -65,7 +76,14 @@ class Profile extends React.Component {
     }));
 
     fetch(
-      `http://127.0.0.1:8000/api/profile/toggle/${name}/${newValue ? 1 : 0}`
+      `http://127.0.0.1:8000/api/profile/toggle/${name}/${newValue ? 1 : 0}`,
+      {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      }
     )
       .then((response) => {
         if (!response.ok) {
@@ -645,7 +663,7 @@ class Profile extends React.Component {
                 </span>
               </div>
 
-              <div className="list-row clickable">
+              <div className="list-row clickable" onClick={this.handleLogout}>
                 <span className="row-ic">
                   <svg
                     width="17"

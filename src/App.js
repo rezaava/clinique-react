@@ -17,7 +17,7 @@ import AuthCheckComponent from './components/AuthCheckComponent';
 
 function AppContent() {
     const location = useLocation();
-    const hideFooter = ['/login', '/register','/'].includes(location.pathname);
+    const hideFooter = ['/login', '/register'].includes(location.pathname);
 
     return (
         <>

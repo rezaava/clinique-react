@@ -224,10 +224,13 @@ class Consultation extends React.Component {
       selectedSlot: null,
       time: "",
     });
-
-    fetch(
-      `http://127.0.0.1:8000/api/freetimes/${dateISO}/${service.id}`
-    )
+    fetch(`http://127.0.0.1:8000/api/freetimes/${dateISO}/${service.id}`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then((response) => {
         if (!response.ok) {
           return response.json().then((result) => {
@@ -437,7 +440,8 @@ class Consultation extends React.Component {
     fetch("http://localhost:8000/api/consultations/store", {
       method: "POST",
       headers: {
-        Accept: "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: formData,
     })

@@ -235,6 +235,7 @@ class Login extends React.Component {
                                 <div className="login-input-wrap">
                                     <input
                                         id="phone"
+                                        maxLength={11}
                                         type="tel"
                                         name="phone"
                                         value={this.state.phone}

@@ -20,14 +20,19 @@ class Appointments extends React.Component {
   }
 
   getAppointments = () => {
-    fetch("http://localhost:8000/api/appointments")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("خطا در دریافت نوبت‌ها");
-        }
+    fetch("http://localhost:8000/api/appointments", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error("خطا در دریافت نوبت‌ها");
+      }
 
-        return response.json();
-      })
+      return response.json();
+    })
       .then((result) => {
         if (!result.success) {
           throw new Error(
@@ -214,9 +219,8 @@ class Appointments extends React.Component {
 
         <div className="tabs-row">
           <button
-            className={`tab-btn ${
-              activeTab === "upcoming" ? "active" : ""
-            }`}
+            className={`tab-btn ${activeTab === "upcoming" ? "active" : ""
+              }`}
             onClick={() =>
               this.handleTabChange("upcoming")
             }
@@ -225,9 +229,8 @@ class Appointments extends React.Component {
           </button>
 
           <button
-            className={`tab-btn ${
-              activeTab === "past" ? "active" : ""
-            }`}
+            className={`tab-btn ${activeTab === "past" ? "active" : ""
+              }`}
             onClick={() =>
               this.handleTabChange("past")
             }
@@ -236,9 +239,8 @@ class Appointments extends React.Component {
           </button>
 
           <button
-            className={`tab-btn ${
-              activeTab === "cancelled" ? "active" : ""
-            }`}
+            className={`tab-btn ${activeTab === "cancelled" ? "active" : ""
+              }`}
             onClick={() =>
               this.handleTabChange("cancelled")
             }
@@ -367,13 +369,13 @@ class Appointments extends React.Component {
 
                       {nextAppointment.payment_status === "paid"
                         ? `پرداخت کامل · ${this.formatNumber(
-                            nextAppointment.transaction?.paid_amount ||
-                              nextAppointment.amount
-                          )} تومان`
+                          nextAppointment.transaction?.paid_amount ||
+                          nextAppointment.amount
+                        )} تومان`
                         : `بیعانه پرداخت شد · ${this.formatNumber(
-                            nextAppointment.transaction?.paid_amount ||
-                              nextAppointment.deposit_amount
-                          )} تومان`}
+                          nextAppointment.transaction?.paid_amount ||
+                          nextAppointment.deposit_amount
+                        )} تومان`}
                     </div>
 
                     <div className="next-appt-btns">
