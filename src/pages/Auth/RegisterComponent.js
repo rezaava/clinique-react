@@ -11,13 +11,42 @@ class Register extends React.Component {
             last_name: "",
             phone: "",
             password: "",
-            showPassword: false
+            showPassword: false,
+            loading: false,
+            error: "",
+            success: ""
         };
+        this.messageTimer = null;
     }
+
+    componentWillUnmount() {
+        clearTimeout(this.messageTimer);
+    }
+
+    showMessage = (type, message) => {
+        clearTimeout(this.messageTimer);
+        this.setState({
+            error: type === "error" ? message : "",
+            success: type === "success" ? message : ""
+        });
+        this.messageTimer = setTimeout(() => {
+            this.setState({ error: "", success: "" });
+        }, 3000);
+    };
+
+    closeMessage = () => {
+        clearTimeout(this.messageTimer);
+        this.setState({ error: "", success: "" });
+    };
 
     handleChange = (e) => {
         const { name, value } = e.target;
-        this.setState({ [name]: value });
+        clearTimeout(this.messageTimer);
+        this.setState({
+            [name]: value,
+            error: "",
+            success: ""
+        });
     };
 
     handleSubmit = (e) => {
@@ -26,36 +55,108 @@ class Register extends React.Component {
         const { first_name, last_name, phone, password } = this.state;
 
         if (!first_name.trim() || !last_name.trim() || !phone.trim() || !password) {
-            alert("لطفاً تمام فیلدها را تکمیل کنید.");
+            this.showMessage("error", "لطفاً تمام فیلدها را تکمیل کنید.");
             return;
         }
 
         if (!/^09\d{9}$/.test(phone)) {
-            alert("شماره موبایل معتبر نیست.");
+            this.showMessage("error", "شماره موبایل معتبر نیست.");
             return;
         }
 
         if (password.length < 8) {
-            alert("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+            this.showMessage("error", "رمز عبور باید حداقل ۸ کاراکتر باشد.");
             return;
         }
 
-        console.log({
-            first_name,
-            last_name,
-            phone,
-            password
-        });
+        this.setState({ loading: true, error: "", success: "" });
+
+        fetch("http://localhost:8000/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                first_name: first_name.trim(),
+                last_name: last_name.trim(),
+                phone: phone.trim(),
+                password
+            })
+        })
+            .then((response) => {
+                return response.json().then((result) => {
+                    if (!response.ok || !result.success) {
+                        const errors = result.errors
+                            ? Object.values(result.errors).flat()
+                            : [];
+
+                        throw new Error(errors.join(" ") || result.message || "ثبت‌نام ناموفق بود.");
+                    }
+
+                    return result;
+                });
+            })
+            .then((result) => {
+                if (!result.token) {
+                    throw new Error("توکن ورود از سرور دریافت نشد.");
+                }
+
+                localStorage.setItem("token", result.token);
+
+                if (result.user) {
+                    localStorage.setItem("user", JSON.stringify(result.user));
+                }
+
+                this.showMessage("success", result.message || "ثبت‌نام با موفقیت انجام شد.");
+
+                setTimeout(() => {
+                    this.props.navigate("/");
+                }, 700);
+            })
+            .catch((error) => {
+                this.showMessage(
+                    "error",
+                    error instanceof TypeError
+                        ? "ارتباط با سرور برقرار نشد."
+                        : error.message
+                );
+            })
+            .finally(() => {
+                this.setState({ loading: false });
+            });
     };
 
     render() {
         return (
             <div className="register-page" dir="rtl">
+                {(this.state.error || this.state.success) && (
+                    <div
+                        className={`register-toast ${this.state.error ? "register-toast-error" : "register-toast-success"}`}
+                        role={this.state.error ? "alert" : "status"}
+                    >
+                        <span className="register-toast-icon">
+                            {this.state.error ? "!" : "✓"}
+                        </span>
+                        <span className="register-toast-text">
+                            {this.state.error || this.state.success}
+                        </span>
+                        <button
+                            type="button"
+                            className="register-toast-close"
+                            onClick={this.closeMessage}
+                            aria-label="بستن پیام"
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+
                 <div className="page-header">
                     <button
                         className="icon-btn"
                         aria-label="بازگشت"
-                        onClick={() => window.history.back()}
+                        onClick={() => this.props.navigate(-1)}
                         type="button"
                     >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,7 +165,6 @@ class Register extends React.Component {
                     </button>
 
                     <div className="page-title">ایجاد حساب کاربری</div>
-
                     <div className="register-header-space"></div>
                 </div>
 
@@ -83,11 +183,10 @@ class Register extends React.Component {
                     </div>
 
                     <div className="register-card">
-                        <form onSubmit={this.handleSubmit}>
+                        <form onSubmit={this.handleSubmit} noValidate>
                             <div className="register-name-row">
                                 <div className="register-field">
                                     <label htmlFor="first_name">اسم</label>
-
                                     <div className="register-input-wrap">
                                         <input
                                             id="first_name"
@@ -103,7 +202,6 @@ class Register extends React.Component {
 
                                 <div className="register-field">
                                     <label htmlFor="last_name">فامیل</label>
-
                                     <div className="register-input-wrap">
                                         <input
                                             id="last_name"
@@ -120,7 +218,6 @@ class Register extends React.Component {
 
                             <div className="register-field">
                                 <label htmlFor="register-phone">شماره موبایل</label>
-
                                 <div className="register-input-wrap">
                                     <input
                                         id="register-phone"
@@ -143,7 +240,6 @@ class Register extends React.Component {
 
                             <div className="register-field">
                                 <label htmlFor="register-password">رمز عبور</label>
-
                                 <div className="register-input-wrap">
                                     <input
                                         id="register-password"
@@ -182,8 +278,15 @@ class Register extends React.Component {
                                 </div>
                             </div>
 
-                            <button className="register-submit" type="submit">
-                                ایجاد حساب کاربری
+                            <button className="register-submit" type="submit" disabled={this.state.loading}>
+                                {this.state.loading ? (
+                                    <span className="register-loading">
+                                        <span className="register-spinner"></span>
+                                        در حال ثبت‌نام...
+                                    </span>
+                                ) : (
+                                    "ایجاد حساب کاربری"
+                                )}
                             </button>
 
                             <div className="register-login">
