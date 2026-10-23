@@ -164,7 +164,7 @@ textarea {
 .wiz-header {
   display: flex;
   align-items: center;
-  padding: 16px 16px 0;
+  padding: 0px 16px 0;
   flex-shrink: 0;
   position: relative;
   height: 54px;

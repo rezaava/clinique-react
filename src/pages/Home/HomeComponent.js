@@ -96,7 +96,7 @@ class Home extends React.Component {
               </svg>
             </button>
 
-            <button className="login-btn">
+            <Link to="/login" className="login-btn">
               <svg
                 width="15"
                 height="15"
@@ -110,7 +110,7 @@ class Home extends React.Component {
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
               </svg>
               ورود
-            </button>
+            </Link>
           </div>
         </header>
 

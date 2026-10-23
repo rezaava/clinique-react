@@ -1,5 +1,3 @@
-import logo from './logo.svg';
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home/HomeComponent';
@@ -15,41 +13,40 @@ import Consultation from './pages/Consultation/ConsultationComponent';
 import Booking from './pages/Booking/BookingComponent';
 import Login from './pages/Auth/LoginComponent';
 import Register from './pages/Auth/RegisterComponent';
-
+import AuthCheckComponent from './components/AuthCheckComponent';
 
 function App() {
-  return (
-    <div className="page-outer">
-      <div className="app-shell">
-        <BrowserRouter>
+    return (
+        <div className="page-outer">
+            <div className="app-shell">
+                <BrowserRouter>
+                    <Routes>
+                        {/* صفحات عمومی */}
+                        <Route path="/" element={<Home />} />
+                        <Route path="/services" element={<Services />} />
+                        <Route path="/service-detail/:id" element={<ServiceDetail />} />
+                        <Route path="/specialist-profile/:id" element={<SpecialistProfile />} />
 
-          <Routes>
-            <Route path="/" element={<Home />} />
+                        {/* صفحات ورود و ثبت‌نام */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
 
-            <Route path="/services" element={<Services />} />
-            <Route path="/service-detail/:id" element={<ServiceDetail />}/>
+                        {/* صفحات نیازمند ورود */}
+                        <Route element={<AuthCheckComponent />}>
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/journey" element={<Journey />} />
+                            <Route path="/appointments" element={<Appointments />} />
+                            <Route path="/appointments/detail/:id" element={<AppointmentsDet />} />
+                            <Route path="/booking" element={<Booking />} />
+                            <Route path="/consultation" element={<Consultation />} />
+                        </Route>
+                    </Routes>
 
-            <Route path="/specialist-profile/:id" element={<SpecialistProfile />}/>
-
-            <Route path="/profile" element={<Profile />}/>
-            <Route path="/journey" element={<Journey />}/>
-
-            <Route path="/appointments" element={<Appointments />}/>
-            <Route path="/appointments/detail/:id" element={<AppointmentsDet />}/>
-            <Route path="/booking" element={<Booking />}/>
-
-            <Route path="/consultation" element={<Consultation />}/>
-            
-            <Route path="/login" element={<Login />}/>
-            <Route path="/register" element={<Register />}/>
-
-          </Routes>
-
-          <Footer/>
-        </BrowserRouter>
-      </div>
-    </div>
-  );
+                    <Footer />
+                </BrowserRouter>
+            </div>
+        </div>
+    );
 }
 
 export default App;
