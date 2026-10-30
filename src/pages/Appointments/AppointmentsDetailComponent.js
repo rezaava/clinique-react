@@ -19,7 +19,7 @@ class AppointmentsDet extends React.Component {
     const { id } = this.props.params;
 
 
-    fetch(`http://localhost:8000/api/appointment/det/${id}`, {
+    fetch(`http://laclinique.rezaavareh.ir/api/appointment/det/${id}`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -292,7 +292,7 @@ class AppointmentsDet extends React.Component {
       cancelling: true,
       actionMessage: null,
     });
-    fetch(`http://localhost:8000/api/appointment/cancel/${appointment.id}`, {
+    fetch(`http://laclinique.rezaavareh.ir/api/appointment/cancel/${appointment.id}`, {
       method: "POST",
       headers: {
         Accept: "application/json",

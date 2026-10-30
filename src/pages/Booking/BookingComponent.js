@@ -397,7 +397,7 @@ class Booking extends React.Component {
     });
 
     fetch(
-      "http://127.0.0.1:8000/api/services"
+      "http://laclinique.rezaavareh.ir/api/services"
     )
       .then((response) => {
         if (!response.ok) {
@@ -447,7 +447,7 @@ class Booking extends React.Component {
     });
 
     fetch(
-      "http://127.0.0.1:8000/api/workdays"
+      "http://laclinique.rezaavareh.ir/api/workdays"
     )
       .then((response) => {
         if (!response.ok) {
@@ -535,7 +535,7 @@ class Booking extends React.Component {
       time: null,
     });
 
-    fetch(`http://127.0.0.1:8000/api/freetimes/${date}/${service.id}`, {
+    fetch(`http://laclinique.rezaavareh.ir/api/freetimes/${date}/${service.id}`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -1827,8 +1827,8 @@ class Booking extends React.Component {
     const token = localStorage.getItem("token");
 
     const url = withDeposit
-      ? "http://127.0.0.1:8000/api/booking/deposit"
-      : "http://127.0.0.1:8000/api/booking/no-deposit";
+      ? "http://laclinique.rezaavareh.ir/api/booking/deposit"
+      : "http://laclinique.rezaavareh.ir/api/booking/no-deposit";
 
     this.setState({
       bookingLoading: true,

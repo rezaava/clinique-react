@@ -137,7 +137,7 @@ class Consultation extends React.Component {
   };
 
   fetchServices = () => {
-    fetch("http://127.0.0.1:8000/api/services")
+    fetch("http://laclinique.rezaavareh.ir/api/services")
       .then((response) => {
         if (!response.ok) {
           throw new Error("خطا در دریافت لیست خدمات");
@@ -168,7 +168,7 @@ class Consultation extends React.Component {
   };
 
   fetchSpecialists = () => {
-    fetch("http://127.0.0.1:8000/api/doctors")
+    fetch("http://laclinique.rezaavareh.ir/api/doctors")
       .then((response) => {
         if (!response.ok) {
           throw new Error("خطا در دریافت لیست متخصصین");
@@ -224,7 +224,7 @@ class Consultation extends React.Component {
       selectedSlot: null,
       time: "",
     });
-    fetch(`http://127.0.0.1:8000/api/freetimes/${dateISO}/${service.id}`, {
+    fetch(`http://laclinique.rezaavareh.ir/api/freetimes/${dateISO}/${service.id}`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -437,7 +437,7 @@ class Consultation extends React.Component {
 
     this.setState({ isSubmitting: true, submitError: null });
 
-    fetch("http://localhost:8000/api/consultations/store", {
+    fetch("http://laclinique.rezaavareh.ir/api/consultations/store", {
       method: "POST",
       headers: {
         "Accept": "application/json",

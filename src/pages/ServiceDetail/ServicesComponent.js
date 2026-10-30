@@ -25,7 +25,7 @@ class ServiceDetail extends React.Component {
   componentDidMount() {
     const { id } = this.props.params;
 
-    fetch(`http://localhost:8000/api/services/${id}`)
+    fetch(`http://laclinique.rezaavareh.ir/api/services/${id}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("خطا در دریافت اطلاعات خدمت");

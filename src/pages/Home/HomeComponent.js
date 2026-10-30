@@ -19,7 +19,7 @@ class Home extends React.Component {
 
 
   getHomeData = () => {
-    fetch("http://localhost:8000/api/home")
+    fetch("http://laclinique.rezaavareh.ir/api/home")
       .then((response) => {
         if (!response.ok) {
           throw new Error("خطا در دریافت اطلاعات صفحه اصلی");

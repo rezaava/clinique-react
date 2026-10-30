@@ -81,7 +81,7 @@ class Login extends React.Component {
 
         clearTimeout(this.messageTimer);
 
-        fetch("http://localhost:8000/api/login", {
+        fetch("http://laclinique.rezaavareh.ir/api/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

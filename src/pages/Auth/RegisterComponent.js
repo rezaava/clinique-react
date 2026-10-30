@@ -71,7 +71,7 @@ class Register extends React.Component {
 
         this.setState({ loading: true, error: "", success: "" });
 
-        fetch("http://localhost:8000/api/register", {
+        fetch("http://laclinique.rezaavareh.ir/api/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

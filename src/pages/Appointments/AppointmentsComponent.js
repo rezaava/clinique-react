@@ -20,7 +20,7 @@ class Appointments extends React.Component {
   }
 
   getAppointments = () => {
-    fetch("http://localhost:8000/api/appointments", {
+    fetch("http://laclinique.rezaavareh.ir/api/appointments", {
       method: "GET",
       headers: {
         "Accept": "application/json",

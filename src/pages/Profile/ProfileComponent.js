@@ -26,7 +26,7 @@ class Profile extends React.Component {
   };
 
   getProfile = () => {
-    fetch("http://127.0.0.1:8000/api/profile", {
+    fetch("http://laclinique.rezaavareh.ir/api/profile", {
       method: "GET",
       headers: {
         "Accept": "application/json",
@@ -76,7 +76,7 @@ class Profile extends React.Component {
     }));
 
     fetch(
-      `http://127.0.0.1:8000/api/profile/toggle/${name}/${newValue ? 1 : 0}`,
+      `http://laclinique.rezaavareh.ir/api/profile/toggle/${name}/${newValue ? 1 : 0}`,
       {
         method: "GET",
         headers: {
